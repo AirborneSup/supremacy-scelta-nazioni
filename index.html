@@ -30,7 +30,6 @@
             </div>
 
             <div class="game-phase" id="game-phase">
-                <!-- Contenuto Fase gestito da JS -->
                 <div class="hero-status" id="hero-status-p1" style="display: none;"></div>
                 <div class="hero-status" id="hero-status-p2" style="display: none;"></div>
             </div>
@@ -95,7 +94,6 @@
         </div>
     </div>
 
-     <!-- Finestra Modale di Conferma/Ringraziamento -->
      <div id="thank-you-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <button class="modal-close-btn" id="modal-close-btn" title="Chiudi">×</button>
@@ -113,9 +111,7 @@
         const firebaseConfig = { apiKey: "AIzaSyBMSMS7TCBVATqdoCqNX99AriyiSpy9y8E", authDomain: "supremacy-web.firebaseapp.com", databaseURL: "https://supremacy-web-default-rtdb.europe-west1.firebasedatabase.app", projectId: "supremacy-web", storageBucket: "supremacy-web.firebasestorage.app", messagingSenderId: "30781020744", appId: "1:30781020744:web:81eee78242a060a9d6167d", measurementId: "G-VTMYEXEDSW" };
         let database;
         try { if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); console.log("Firebase inizializzato."); } else { firebase.app(); console.log("Firebase già inizializzato."); } database = firebase.database(); } catch (e) { console.error("ERRORE INIT FIREBASE:", e); alert("Errore Inizializzazione Firebase."); document.body.innerHTML = '<h1 style="color:red; text-align:center;">Errore Critico: Inizializzazione Firebase fallita.</h1>'; }
-        // Inizializza jsPDF
-        const { jsPDF } = window.jspdf;
-
+        const { jsPDF } = window.jspdf; // Inizializza jsPDF
         const allNations = [ { id: 1, name: "Marocco", code: "ma", bonus: "Posizione strategica", description: "Crocevia tra Africa ed Europa" }, { id: 2, name: "Spagna", code: "es", bonus: "Esplorazione +10%", description: "Terra di conquistadores" }, { id: 3, name: "Francia", code: "fr", bonus: "Diplomazia +15%", description: "Terra di rivoluzioni e vino" }, { id: 4, name: "Gran Bretagna", code: "gb", bonus: "Commercio +15%", description: "Impero marittimo storico" }, { id: 5, name: "Germania", code: "de", bonus: "Produzione +20%", description: "Potenza industriale europea" }, { id: 6, name: "Italia", code: "it", bonus: "Cultura +10%", description: "Patria dell'arte e della cucina" }, { id: 7, name: "Austria", code: "at", bonus: "Musica +10%", description: "Cuore dell'Europa centrale" }, { id: 8, name: "Turchia", code: "tr", bonus: "Posizione +15%", description: "Crocevia tra continenti" }, { id: 9, name: "Russia", code: "ru", bonus: "Territorio +25%", description: "Vasta nazione euroasiatica" }, { id: 10, name: "Svezia", code: "se", bonus: "Innovazione +10%", description: "Terra di tecnologia e natura" } ];
         let localGameState = {}; let playerRole = null; let playerName = ""; let roomId = ""; let timerInterval = null; let roomRef = null;
         let turnStartTime = 0; let timerDuration = 3600000;
@@ -137,8 +133,8 @@
         const thankYouModal = document.getElementById('thank-you-modal');
         const modalCloseBtn = document.getElementById('modal-close-btn');
 
-         // --- Definizione Oggetti Audio ---
-         const sounds = {
+        // --- Definizione Oggetti Audio ---
+        const sounds = {
             click: new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_16ed40ae87.mp3'),
             turn: new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_1136301d6b.mp3'),
             heroYes: new Audio('https://cdn.pixabay.com/download/audio/2022/03/10/audio_c293b2b87a.mp3'),
@@ -146,7 +142,7 @@
             error: new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_1e0a619f4f.mp3'),
             complete: new Audio('https://cdn.pixabay.com/download/audio/2021/08/04/audio_125c15714a.mp3')
         };
-        Object.values(sounds).forEach(sound => { sound.preload = 'auto'; sound.volume = 0.7; }); // Preload e abbassa volume
+        Object.values(sounds).forEach(sound => { sound.preload = 'auto'; sound.volume = 0.6; }); // Volume leggermente ridotto
 
         // Funzione per riprodurre suoni
         function playSound(soundName) {
@@ -164,192 +160,70 @@
         function generateRoomId() { return Math.random().toString(36).substring(2, 6).toUpperCase(); }
 
         joinBtn.addEventListener('click', () => {
-             // Tentativo sblocco audio al primo click
-             try { const unlockSound = sounds['click']; if(unlockSound && unlockSound.paused) { console.log("Tentativo sblocco audio..."); unlockSound.play().then(() => unlockSound.pause()).catch(()=>{}); } } catch(e) { console.warn("Errore sblocco audio:", e); }
-             playSound('click'); // Suono click bottone
-             playerName = playerNameInput.value.trim(); let potentialRoomId = roomIdInput.value.trim().toUpperCase(); console.log("Join cliccato. Nome:", playerName, "Room:", potentialRoomId || "(Nuova)"); if (!playerName) { alert("Inserire nome in codice."); playSound('error'); return; } if (!database) { console.error("DB non disponibile."); alert("Errore Database."); playSound('error'); return; } joinBtn.disabled = true; if (!potentialRoomId) { roomId = generateRoomId(); console.log(`Creazione stanza: ${roomId}`); playerRole = 1; initializeGame(); } else { roomId = potentialRoomId; console.log(`Tentativo join stanza: ${roomId}`); joinRoom(); } });
-        function joinRoom() { console.log("Funzione joinRoom"); if (!database) { console.error("DB Error"); joinBtn.disabled = false; return; } const currentRoomRef = database.ref(`rooms/${roomId}`); currentRoomRef.once('value').then(snapshot => { if (snapshot.exists()) { const roomData = snapshot.val() || {}; const p1Data = roomData.player1 || {}; const p2Data = roomData.player2 || {}; const p1Exists = !!p1Data.name; const p2Exists = !!p2Data.name; if (p1Exists && p1Data.name === playerName) { console.log("Riconnesso G1"); alert("Riconnesso come Comando 1."); playSound('turn'); playerRole = 1; initializeGameView(); listenToRoomChanges(); return; } if (p2Exists && p2Data.name === playerName) { console.log("Riconnesso G2"); alert("Riconnesso come Comando 2."); playSound('turn'); playerRole = 2; initializeGameView(); listenToRoomChanges(); return; } if (p1Exists && p2Exists) { console.warn("Stanza piena"); alert("Stanza strategica piena!"); playSound('error'); resetLoginUI(); return; } playerRole = p1Exists ? 2 : 1; console.log("Assegnato ruolo:", playerRole); initializeGame(); } else { console.warn("Stanza non trovata:", roomId); alert("Stanza non trovata!"); playSound('error'); resetLoginUI(); } }).catch(error => { console.error("Errore lettura DB (joinRoom):", error); alert("Errore connessione stanza: " + error.message); playSound('error'); resetLoginUI(); }); }
-        function resetLoginUI() { console.log("Reset UI Login."); roomId = ""; if(roomRef) { roomRef.off("value"); roomRef = null;} playerRole = null; joinBtn.disabled = false; roomIdInput.value = ''; loginContainer.style.display = 'block'; gameContainer.style.display = 'none'; }
+             try { const unlockSound = sounds['click']; if(unlockSound && unlockSound.paused) { unlockSound.play().then(() => unlockSound.pause()).catch(()=>{}); } } catch(e) {} // Tentativo sblocco audio silenzioso
+             playSound('click'); // Suono bottone
+             playerName = playerNameInput.value.trim(); let potentialRoomId = roomIdInput.value.trim().toUpperCase(); if (!playerName) { alert("Inserire nome in codice."); playSound('error'); return; } if (!database) { console.error("DB non disponibile."); alert("Errore Database."); playSound('error'); return; } joinBtn.disabled = true; if (!potentialRoomId) { roomId = generateRoomId(); playerRole = 1; initializeGame(); } else { roomId = potentialRoomId; joinRoom(); } });
+        function joinRoom() { if (!database) { console.error("DB Error"); joinBtn.disabled = false; return; } const currentRoomRef = database.ref(`rooms/${roomId}`); currentRoomRef.once('value').then(snapshot => { if (snapshot.exists()) { const roomData = snapshot.val() || {}; const p1Data = roomData.player1 || {}; const p2Data = roomData.player2 || {}; const p1Exists = !!p1Data.name; const p2Exists = !!p2Data.name; if (p1Exists && p1Data.name === playerName) { alert("Riconnesso come Comando 1."); playSound('turn'); playerRole = 1; initializeGameView(); listenToRoomChanges(); return; } if (p2Exists && p2Data.name === playerName) { alert("Riconnesso come Comando 2."); playSound('turn'); playerRole = 2; initializeGameView(); listenToRoomChanges(); return; } if (p1Exists && p2Exists) { alert("Stanza strategica piena!"); playSound('error'); resetLoginUI(); return; } playerRole = p1Exists ? 2 : 1; initializeGame(); } else { alert("Stanza non trovata!"); playSound('error'); resetLoginUI(); } }).catch(error => { alert("Errore connessione stanza: " + error.message); playSound('error'); resetLoginUI(); }); }
+        function resetLoginUI() { roomId = ""; if(roomRef) { roomRef.off("value"); roomRef = null;} playerRole = null; joinBtn.disabled = false; roomIdInput.value = ''; loginContainer.style.display = 'block'; gameContainer.style.display = 'none'; }
         function initializeGameView() { loginContainer.style.display = 'none'; gameContainer.style.display = 'block'; displayRoomId.textContent = roomId; displayPlayerName.textContent = playerName; displayPlayerRole.textContent = `Comando ${playerRole}`; }
-        function initializeGame() { console.log("Funzione initializeGame (scrittura dati)"); if (!database) { console.error("DB Error"); resetLoginUI(); return; } initializeGameView(); const updates = {}; updates[`/rooms/${roomId}/player${playerRole}/name`] = playerName; updates[`/rooms/${roomId}/player${playerRole}/team`] = []; updates[`/rooms/${roomId}/player${playerRole}/heroChoice`] = null; const roomBaseRef = database.ref(`/rooms/${roomId}`); roomBaseRef.once('value').then(snapshot => { const roomData = snapshot.val() || {}; if (playerRole === 1 && !roomData.gamePhase) { console.log("G1 inizializza stato partita."); updates[`/rooms/${roomId}/currentPlayer`] = 1; updates[`/rooms/${roomId}/gamePhase`] = "waiting"; updates[`/rooms/${roomId}/timerEnd`] = null; updates[`/rooms/${roomId}/player1/heroChoice`] = null; updates[`/rooms/${roomId}/player2/heroChoice`] = null; } console.log("Invio updates:", updates); database.ref().update(updates).then(() => { console.log("DB aggiornato. Avvio listener."); listenToRoomChanges(); }).catch(error => { console.error("Errore Update DB (initializeGame):", error); alert("Errore creazione/aggiornamento stanza: " + error.message); playSound('error'); handleGameEndCleanup(); }); }).catch(error => { console.error("Errore Read DB (initializeGame):", error); alert("Errore verifica stato stanza: " + error.message); playSound('error'); handleGameEndCleanup(); }); }
+        function initializeGame() { if (!database) { console.error("DB Error"); resetLoginUI(); return; } initializeGameView(); const updates = {}; updates[`/rooms/${roomId}/player${playerRole}/name`] = playerName; updates[`/rooms/${roomId}/player${playerRole}/team`] = []; updates[`/rooms/${roomId}/player${playerRole}/heroChoice`] = null; const roomBaseRef = database.ref(`/rooms/${roomId}`); roomBaseRef.once('value').then(snapshot => { const roomData = snapshot.val() || {}; if (playerRole === 1 && !roomData.gamePhase) { updates[`/rooms/${roomId}/currentPlayer`] = 1; updates[`/rooms/${roomId}/gamePhase`] = "waiting"; updates[`/rooms/${roomId}/timerEnd`] = null; updates[`/rooms/${roomId}/player1/heroChoice`] = null; updates[`/rooms/${roomId}/player2/heroChoice`] = null; } database.ref().update(updates).then(() => { listenToRoomChanges(); }).catch(error => { alert("Errore creazione/aggiornamento stanza: " + error.message); playSound('error'); handleGameEndCleanup(); }); }).catch(error => { alert("Errore verifica stato stanza: " + error.message); playSound('error'); handleGameEndCleanup(); }); }
 
         function listenToRoomChanges() {
-            console.log("Avvio listener stanza:", roomId);
             if (!database) { console.error("DB Error"); return; }
             if (roomRef) { roomRef.off("value"); }
-
             roomRef = database.ref(`rooms/${roomId}`);
             roomRef.on('value', snapshot => {
-                if (!snapshot.exists()) { console.warn("Listener: Stanza cancellata."); if (document.getElementById('game-container').style.display !== 'none') { alert("La conferenza strategica è terminata."); playSound('error'); handleGameEndCleanup(); } return; }
-                const roomData = snapshot.val(); if (!roomData || typeof roomData !== 'object') { console.error("Listener: Dati non validi.", roomData); return; }
-
-                const prevPlayer = localGameState.currentPlayer;
-                const prevPhase = localGameState.gamePhase;
-
-                const p1Data = roomData.player1 || { name: "", team: [], heroChoice: null };
-                const p2Data = roomData.player2 || { name: "", team: [], heroChoice: null };
+                if (!snapshot.exists()) { if (document.getElementById('game-container').style.display !== 'none') { alert("La conferenza strategica è terminata."); playSound('error'); handleGameEndCleanup(); } return; }
+                const roomData = snapshot.val(); if (!roomData || typeof roomData !== 'object') { return; }
+                const prevPlayer = localGameState.currentPlayer; const prevPhase = localGameState.gamePhase;
+                const p1Data = roomData.player1 || { name: "", team: [], heroChoice: null }; const p2Data = roomData.player2 || { name: "", team: [], heroChoice: null };
                 const normalizeTeam = (team) => (!team ? [] : (Array.isArray(team) ? team : Object.values(team)));
                 localGameState = { player1: { name: p1Data.name || "", team: normalizeTeam(p1Data.team), heroChoice: p1Data.heroChoice }, player2: { name: p2Data.name || "", team: normalizeTeam(p2Data.team), heroChoice: p2Data.heroChoice }, currentPlayer: roomData.currentPlayer !== undefined ? roomData.currentPlayer : null, gamePhase: roomData.gamePhase || "waiting", timerEnd: roomData.timerEnd || null };
-
                 updateUI();
-
-                 if(localGameState.gamePhase === 'draft' && localGameState.currentPlayer !== prevPlayer && localGameState.currentPlayer !== null) {
-                      if(localGameState.currentPlayer === playerRole) playSound('turn');
-                      const activePlayerElement = document.getElementById(`player${localGameState.currentPlayer}`);
-                      if(activePlayerElement) {
-                          activePlayerElement.classList.remove('turn-pulse'); void activePlayerElement.offsetWidth; activePlayerElement.classList.add('turn-pulse');
-                          setTimeout(() => activePlayerElement.classList.remove('turn-pulse'), 600);
-                      }
-                 }
-                 if ((localGameState.gamePhase === 'hero_selection' && prevPhase === 'completed') || (localGameState.gamePhase === 'summary' && prevPhase === 'hero_selection')) {
-                    playSound('complete');
-                 }
-
-                if (playerRole === 1) {
-                    if (localGameState.gamePhase === "waiting" && prevPhase === "waiting" && localGameState.player1.name && localGameState.player2.name) {
-                        console.log("Listener: G1 avvia draft."); startDraft();
-                    }
-                }
-
-                if (localGameState.gamePhase === "draft" && localGameState.timerEnd) {
-                    timerBarContainer.style.display = 'block'; startTimer();
-                } else {
-                    clearInterval(timerInterval); timerInterval = null; timerBarContainer.style.display = 'none';
-                }
-
+                 if(localGameState.gamePhase === 'draft' && localGameState.currentPlayer !== prevPlayer && localGameState.currentPlayer !== null) { if(localGameState.currentPlayer === playerRole) playSound('turn'); const el = document.getElementById(`player${localGameState.currentPlayer}`); if(el) { el.classList.remove('turn-pulse'); void el.offsetWidth; el.classList.add('turn-pulse'); setTimeout(() => el.classList.remove('turn-pulse'), 600); }}
+                 if ((localGameState.gamePhase === 'hero_selection' && prevPhase === 'draft') || (localGameState.gamePhase === 'summary' && prevPhase === 'hero_selection')) { playSound('complete'); }
+                 if (playerRole === 1 && localGameState.gamePhase === "waiting" && prevPhase === "waiting" && localGameState.player1.name && localGameState.player2.name) { startDraft(); }
+                 if (localGameState.gamePhase === "draft" && localGameState.timerEnd) { timerBarContainer.style.display = 'block'; startTimer(); } else { clearInterval(timerInterval); timerInterval = null; timerBarContainer.style.display = 'none'; }
             }, errorObject => { console.error("Errore Listener DB:", errorObject); alert("Errore connessione persistente: " + errorObject.message); playSound('error'); handleGameEndCleanup(); });
         }
 
-        function startDraft() { console.log("Funzione startDraft"); if (!database || !roomId || localGameState.gamePhase !== 'waiting') { console.warn("startDraft: Chiamata non valida", localGameState.gamePhase); return; } turnStartTime = Date.now(); timerDuration = 3600000; const startTime = turnStartTime + timerDuration; const updates = { gamePhase: "draft", currentPlayer: 1, timerEnd: startTime }; console.log("Avvio draft:", updates); database.ref(`rooms/${roomId}`).update(updates).catch(error => { console.error("Errore Update DB (startDraft):", error); alert("Errore avvio draft: " + error.message); playSound('error'); }); }
-        function startTimer() { clearInterval(timerInterval); timerInterval = null; if (!localGameState.timerEnd || localGameState.gamePhase !== 'draft') { timerEl.textContent = ''; timerBarContainer.style.display = 'none'; return; } turnStartTime = localGameState.timerEnd - timerDuration; const updateTimerDisplay = () => { const now = Date.now(); const endTime = localGameState.timerEnd; const remaining = endTime - now; if (remaining <= 0) { timerEl.textContent = "Tempo Scaduto!"; timerBar.style.width = '0%'; clearInterval(timerInterval); timerInterval = null; if (localGameState.currentPlayer === playerRole && localGameState.gamePhase === 'draft') { console.log("Timer scaduto per", playerRole); playSound('error'); skipTurn(); } } else { const hours = Math.floor(remaining / 3600000); const minutes = Math.floor((remaining % 3600000) / 60000); const seconds = Math.floor((remaining % 60000) / 1000); timerEl.textContent = `Tempo: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`; const elapsed = now - turnStartTime; let percentage = 100 - (elapsed / timerDuration * 100); if (percentage < 0) percentage = 0; if (percentage > 100) percentage = 100; timerBar.style.width = `${percentage}%`; } }; updateTimerDisplay(); timerInterval = setInterval(updateTimerDisplay, 1000); }
-        function skipTurn() { console.log("Funzione skipTurn"); if (!database || !roomId || localGameState.gamePhase !== 'draft' || localGameState.currentPlayer !== playerRole) { console.warn("skipTurn: Chiamata non valida."); return; } console.log(`Giocatore ${playerRole} salta il turno.`); const nextPlayer = localGameState.currentPlayer === 1 ? 2 : 1; turnStartTime = Date.now(); timerDuration = 3600000; const newTimerEnd = turnStartTime + timerDuration; database.ref(`rooms/${roomId}`).update({ currentPlayer: nextPlayer, timerEnd: newTimerEnd }).catch(error => console.error("Errore Update DB (skipTurn):", error)); }
+        function startDraft() { if (!database || !roomId || localGameState.gamePhase !== 'waiting') { return; } turnStartTime = Date.now(); timerDuration = 3600000; const startTime = turnStartTime + timerDuration; const updates = { gamePhase: "draft", currentPlayer: 1, timerEnd: startTime }; database.ref(`rooms/${roomId}`).update(updates).catch(error => { alert("Errore avvio draft: " + error.message); playSound('error'); }); }
+        function startTimer() { clearInterval(timerInterval); timerInterval = null; if (!localGameState.timerEnd || localGameState.gamePhase !== 'draft') { timerEl.textContent = ''; timerBarContainer.style.display = 'none'; return; } turnStartTime = localGameState.timerEnd - timerDuration; const updateTimerDisplay = () => { const now = Date.now(); const endTime = localGameState.timerEnd; const remaining = endTime - now; if (remaining <= 0) { timerEl.textContent = "Tempo Scaduto!"; timerBar.style.width = '0%'; clearInterval(timerInterval); timerInterval = null; if (localGameState.currentPlayer === playerRole && localGameState.gamePhase === 'draft') { playSound('error'); skipTurn(); } } else { const h = Math.floor(remaining / 3600000); const m = Math.floor((remaining % 3600000) / 60000); const s = Math.floor((remaining % 60000) / 1000); timerEl.textContent = `Tempo: ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; const elapsed = now - turnStartTime; let p = 100 - (elapsed / timerDuration * 100); p=Math.max(0,Math.min(100,p)); timerBar.style.width = `${p}%`; } }; updateTimerDisplay(); timerInterval = setInterval(updateTimerDisplay, 1000); }
+        function skipTurn() { if (!database || !roomId || localGameState.gamePhase !== 'draft' || localGameState.currentPlayer !== playerRole) { return; } const nextPlayer = localGameState.currentPlayer === 1 ? 2 : 1; turnStartTime = Date.now(); timerDuration = 3600000; const newTimerEnd = turnStartTime + timerDuration; database.ref(`rooms/${roomId}`).update({ currentPlayer: nextPlayer, timerEnd: newTimerEnd }).catch(error => console.error("Errore Update DB (skipTurn):", error)); }
         function selectNationWithAnimation(cardElement, nation) { playSound('click'); cardElement.classList.remove('available'); cardElement.classList.add('selecting'); cardElement.onclick = null; cardElement.onmouseover = null; cardElement.onmouseout = null; const tooltip = cardElement.querySelector('.nation-tooltip'); if(tooltip) tooltip.style.display = 'none'; setTimeout(() => { selectNation(nation); }, 150); }
-        function selectNation(nation) { console.log("Funzione selectNation:", nation?.name); if (!database || !roomId || !nation || typeof nation.id === 'undefined') { console.error("Dati mancanti per selectNation"); return; } if (localGameState.gamePhase !== "draft") { console.warn("Select: Non in draft"); alert("La selezione non è attiva."); playSound('error'); return; } if (localGameState.currentPlayer !== playerRole) { console.warn("Select: Non il mio turno"); alert("Attendere il proprio turno."); playSound('error'); return; } const playerTeam = localGameState[`player${playerRole}`]?.team || []; if (playerTeam.length >= 5) { console.warn("Select: Squadra piena"); alert("Limite nazioni raggiunto."); playSound('error'); return; } const p1Team = localGameState.player1?.team || []; const p2Team = localGameState.player2?.team || []; if (p1Team.includes(nation.id) || p2Team.includes(nation.id)) { console.warn("Select: Nazione già presa"); alert(`${nation.name} già selezionata.`); playSound('error'); return; } console.log(`CONFERMA: ${playerName} (P${playerRole}) seleziona ${nation.name}`); const teamKey = `player${playerRole}/team`; const newTeam = [...playerTeam, nation.id]; const nextPlayer = playerRole === 1 ? 2 : 1; turnStartTime = Date.now(); timerDuration = 3600000; const newTimerEnd = turnStartTime + timerDuration; let newPhase = "draft"; let newCurrentPlayer = nextPlayer; const p1Count = (playerRole === 1) ? newTeam.length : p1Team.length; const p2Count = (playerRole === 2) ? newTeam.length : p2Team.length; const updates = {}; updates[`/rooms/${roomId}/${teamKey}`] = newTeam; if (p1Count === 5 && p2Count === 5) { newPhase = "hero_selection"; newCurrentPlayer = null; updates[`/rooms/${roomId}/timerEnd`] = null; console.log("Selezione Nazioni Completata! Passaggio a Fase Eroi."); } else { updates[`/rooms/${roomId}/timerEnd`] = newTimerEnd; } updates[`/rooms/${roomId}/currentPlayer`] = newCurrentPlayer; updates[`/rooms/${roomId}/gamePhase`] = newPhase; console.log("Invio update selectNation:", updates); database.ref().update(updates).catch(error => { console.error("Errore Update DB (selectNation):", error); alert("Errore selezione nazione: " + error.message); playSound('error'); }); }
+        function selectNation(nation) { if (!database || !roomId || !nation || typeof nation.id === 'undefined') { return; } if (localGameState.gamePhase !== "draft") { alert("La selezione non è attiva."); playSound('error'); return; } if (localGameState.currentPlayer !== playerRole) { alert("Attendere il proprio turno."); playSound('error'); return; } const playerTeam = localGameState[`player${playerRole}`]?.team || []; if (playerTeam.length >= 5) { alert("Limite nazioni raggiunto."); playSound('error'); return; } const p1Team = localGameState.player1?.team || []; const p2Team = localGameState.player2?.team || []; if (p1Team.includes(nation.id) || p2Team.includes(nation.id)) { alert(`${nation.name} già selezionata.`); playSound('error'); return; } const teamKey = `player${playerRole}/team`; const newTeam = [...playerTeam, nation.id]; const nextPlayer = playerRole === 1 ? 2 : 1; turnStartTime = Date.now(); timerDuration = 3600000; const newTimerEnd = turnStartTime + timerDuration; let newPhase = "draft"; let newCurrentPlayer = nextPlayer; const p1Count = (playerRole === 1) ? newTeam.length : p1Team.length; const p2Count = (playerRole === 2) ? newTeam.length : p2Team.length; const updates = {}; updates[`/rooms/${roomId}/${teamKey}`] = newTeam; if (p1Count === 5 && p2Count === 5) { newPhase = "hero_selection"; newCurrentPlayer = null; updates[`/rooms/${roomId}/timerEnd`] = null; } else { updates[`/rooms/${roomId}/timerEnd`] = newTimerEnd; } updates[`/rooms/${roomId}/currentPlayer`] = newCurrentPlayer; updates[`/rooms/${roomId}/gamePhase`] = newPhase; database.ref().update(updates).catch(error => { alert("Errore selezione nazione: " + error.message); playSound('error'); }); }
 
-        // Gestione Scelta Eroi - CORRETTO con disable immediato e suono
         function handleHeroChoice(choice) {
             console.log(`handleHeroChoice chiamata con choice: ${choice}`);
-            playSound(choice ? 'heroYes' : 'heroNo'); // Suono SI/NO
+            playSound(choice ? 'heroYes' : 'heroNo');
+            heroYesBtn.disabled = true; heroNoBtn.disabled = true; heroWaitMessage.style.display = 'block';
+            if (!database || !roomId || playerRole === null) { console.error("handleHeroChoice: Stato invalido."); heroYesBtn.disabled = false; heroNoBtn.disabled = false; heroWaitMessage.style.display = 'none'; playSound('error'); return; }
+            if (localGameState.gamePhase !== 'hero_selection') { console.warn(`handleHeroChoice: Fase errata (${localGameState.gamePhase}).`); heroYesBtn.disabled = false; heroNoBtn.disabled = false; heroWaitMessage.style.display = 'none'; return; }
 
-            heroYesBtn.disabled = true;
-            heroNoBtn.disabled = true;
-            heroWaitMessage.style.display = 'block';
-
-            if (!database || !roomId || playerRole === null) { console.error("handleHeroChoice: Stato DB/Stanza/Ruolo non valido."); heroYesBtn.disabled = false; heroNoBtn.disabled = false; heroWaitMessage.style.display = 'none'; playSound('error'); return; }
-            if (localGameState.gamePhase !== 'hero_selection') { console.warn(`handleHeroChoice: Fase errata (${localGameState.gamePhase}). Esco.`); heroYesBtn.disabled = false; heroNoBtn.disabled = false; heroWaitMessage.style.display = 'none'; return; }
-
-            console.log("handleHeroChoice: Condizioni preliminari superate. Procedo con l'update.");
             const myChoicePath = `/rooms/${roomId}/player${playerRole}/heroChoice`;
             const opponentRole = playerRole === 1 ? 2 : 1;
             const opponentChoicePath = `/rooms/${roomId}/player${opponentRole}/heroChoice`;
             const updates = {}; updates[myChoicePath] = choice;
 
             database.ref(opponentChoicePath).once('value').then(snapshot => {
-                 const opponentChoiceValue = snapshot.val();
-                 const opponentHasChosen = opponentChoiceValue !== null;
-                 console.log(`handleHeroChoice: Scelta avversario (${opponentRole}) letta: ${opponentChoiceValue}`);
-                 if (opponentHasChosen) {
-                     console.log("handleHeroChoice: Avversario ha già scelto. Passo a summary.");
-                     updates[`/rooms/${roomId}/gamePhase`] = "summary";
-                     updates[`/rooms/${roomId}/currentPlayer`] = null;
-                     updates[`/rooms/${roomId}/timerEnd`] = null;
-                 } else { console.log("handleHeroChoice: Attendo scelta avversario."); }
-
-                 database.ref().update(updates)
-                     .then(() => { console.log("Update DB per handleHeroChoice completato."); })
-                     .catch(error => { console.error("Errore update scelta eroi / cambio fase:", error); alert("Errore nel registrare la scelta o cambiare fase."); playSound('error'); heroWaitMessage.style.display = 'none'; });
-            }).catch(error => { console.error("Errore lettura scelta avversario:", error); alert("Errore nel verificare lo stato dell'avversario."); playSound('error'); heroYesBtn.disabled = false; heroNoBtn.disabled = false; heroWaitMessage.style.display = 'none'; });
+                 const opponentChoiceValue = snapshot.val(); const opponentHasChosen = opponentChoiceValue !== null;
+                 if (opponentHasChosen) { console.log("Passo a summary."); updates[`/rooms/${roomId}/gamePhase`] = "summary"; updates[`/rooms/${roomId}/currentPlayer`] = null; updates[`/rooms/${roomId}/timerEnd`] = null; }
+                 else { console.log("Attendo avversario."); }
+                 database.ref().update(updates).catch(error => { console.error("Errore update scelta/fase:", error); alert("Errore registrazione scelta."); playSound('error'); heroWaitMessage.style.display = 'none'; });
+            }).catch(error => { console.error("Errore lettura scelta avversario:", error); alert("Errore verifica avversario."); playSound('error'); heroYesBtn.disabled = false; heroNoBtn.disabled = false; heroWaitMessage.style.display = 'none'; });
         }
-        console.log("Aggiungo listener bottoni eroi..."); // Verifica listener
-        heroYesBtn.addEventListener('click', () => { console.log("CLICK su Bottone SI Eroi RILEVATO!"); handleHeroChoice(true); });
-        heroNoBtn.addEventListener('click', () => { console.log("CLICK su Bottone NO Eroi RILEVATO!"); handleHeroChoice(false); });
+        console.log("Aggiungo listener bottoni eroi...");
+        heroYesBtn.addEventListener('click', () => { console.log("CLICK SI"); handleHeroChoice(true); });
+        heroNoBtn.addEventListener('click', () => { console.log("CLICK NO"); handleHeroChoice(false); });
 
-        // --- Funzione per Generare e Scaricare PDF ---
-        function generateAndDownloadPDF() {
-            console.log("Tentativo generazione PDF...");
-            if (typeof jsPDF === 'undefined') { console.error("Libreria jsPDF non caricata!"); alert("Errore: Impossibile generare il PDF."); playSound('error'); return; }
-            if (!localGameState || !localGameState.player1 || !localGameState.player2 || !roomId) { console.error("Stato partita locale non valido per generare PDF."); alert("Errore: Dati partita incompleti."); playSound('error'); return; }
-            try {
-                const { jsPDF } = window.jspdf; const doc = new jsPDF();
-                const getNationName = (id) => allNations.find(n => n.id === id)?.name || `ID ${id}`;
-                const getHeroText = (choice) => (choice === true ? 'Si' : (choice === false ? 'No' : 'N/D'));
-                let yPos = 15; const lineSpacing = 7; const sectionSpacing = 12; const leftMargin = 15; const column2Offset = 110;
-                doc.setFontSize(18); doc.setFont(undefined, 'bold'); doc.text("Riepilogo Selezione Supremacy 1914 ITA", doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' }); yPos += sectionSpacing;
-                doc.setFontSize(10); doc.setFont(undefined, 'normal'); doc.text(`Stanza: ${roomId}`, leftMargin, yPos); const now = new Date(); doc.text(`Data: ${now.toLocaleDateString('it-IT')} ${now.toLocaleTimeString('it-IT')}`, column2Offset, yPos); yPos += sectionSpacing;
-                doc.setLineWidth(0.3); doc.line(leftMargin, yPos - (sectionSpacing / 2), doc.internal.pageSize.getWidth() - leftMargin, yPos - (sectionSpacing / 2));
-                doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.text(`Comando 1: ${localGameState.player1.name || 'N/D'}`, leftMargin, yPos); yPos += lineSpacing * 1.5;
-                doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("Nazioni Selezionate:", leftMargin, yPos); yPos += lineSpacing; doc.setFont(undefined, 'normal');
-                (localGameState.player1.team || []).forEach((id, index) => { doc.text(`${index + 1}. ${getNationName(id)}`, leftMargin + 5, yPos); yPos += lineSpacing; }); if ((localGameState.player1.team || []).length === 0) { doc.text("- Nessuna", leftMargin + 5, yPos); yPos += lineSpacing; }
-                yPos += lineSpacing / 2; doc.setFont(undefined, 'bold'); doc.text(`Eroi Schierati: ${getHeroText(localGameState.player1.heroChoice)}`, leftMargin, yPos); yPos += sectionSpacing * 1.5;
-                doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.text(`Comando 2: ${localGameState.player2.name || 'N/D'}`, leftMargin, yPos); yPos += lineSpacing * 1.5;
-                doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("Nazioni Selezionate:", leftMargin, yPos); yPos += lineSpacing; doc.setFont(undefined, 'normal');
-                (localGameState.player2.team || []).forEach((id, index) => { doc.text(`${index + 1}. ${getNationName(id)}`, leftMargin + 5, yPos); yPos += lineSpacing; }); if ((localGameState.player2.team || []).length === 0) { doc.text("- Nessuna", leftMargin + 5, yPos); yPos += lineSpacing; }
-                yPos += lineSpacing / 2; doc.setFont(undefined, 'bold'); doc.text(`Eroi Schierati: ${getHeroText(localGameState.player2.heroChoice)}`, leftMargin, yPos);
-                const filename = `riepilogo_draft_${roomId}_${localGameState.player1.name}_vs_${localGameState.player2.name}.pdf`;
-                doc.save(filename); console.log("PDF generato:", filename); playSound('complete');
-                if (thankYouModal) { thankYouModal.style.display = 'flex'; void thankYouModal.offsetWidth; thankYouModal.classList.add('visible'); }
-                else { console.error("Modale non trovata!"); alert("Lo Staff Supremacy 1914 - 2025 ti ringrazia..."); }
-                if(downloadPdfBtn) downloadPdfBtn.style.display = 'none'; if(resetBtn) resetBtn.style.display = 'none';
-            } catch (err) { console.error("Errore generazione PDF:", err); alert("Errore creazione PDF."); playSound('error'); if(downloadPdfBtn) downloadPdfBtn.disabled = false; }
-        }
+        function generateAndDownloadPDF() { console.log("Genero PDF..."); if (typeof jsPDF==='undefined') { alert("Errore PDF."); playSound('error'); return; } if (!localGameState?.player1?.team || !localGameState?.player2?.team || !roomId) { alert("Errore dati PDF."); playSound('error'); return; } try { const { jsPDF } = window.jspdf; const doc = new jsPDF(); const getNationName = (id) => allNations.find(n => n.id === id)?.name || `ID ${id}`; const getHeroText = (c) => (c === true ? 'Si' : (c === false ? 'No' : 'N/D')); let y=15; const ls=7; const ss=12; const lm=15; const co=110; doc.setFontSize(18); doc.setFont(undefined,'bold'); doc.text("Riepilogo Selezione Supremacy 1914 ITA", doc.internal.pageSize.getWidth()/2, y, {align:'center'}); y+=ss; doc.setFontSize(10); doc.setFont(undefined,'normal'); doc.text(`Stanza: ${roomId}`, lm, y); const now=new Date(); doc.text(`Data: ${now.toLocaleDateString('it-IT')} ${now.toLocaleTimeString('it-IT')}`, co, y); y+=ss; doc.setLineWidth(.3); doc.line(lm, y-ss/2, doc.internal.pageSize.getWidth()-lm, y-ss/2); doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.text(`Comando 1: ${localGameState.player1.name||'N/D'}`, lm, y); y+=ls*1.5; doc.setFontSize(11); doc.setFont(undefined,'bold'); doc.text("Nazioni:", lm, y); y+=ls; doc.setFont(undefined,'normal'); (localGameState.player1.team||[]).forEach((id,i)=>{ doc.text(`${i+1}. ${getNationName(id)}`, lm+5, y); y+=ls; }); if (!(localGameState.player1.team||[]).length){ doc.text("- Nessuna", lm+5, y); y+=ls; } y+=ls/2; doc.setFont(undefined,'bold'); doc.text(`Eroi: ${getHeroText(localGameState.player1.heroChoice)}`, lm, y); y+=ss*1.5; doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.text(`Comando 2: ${localGameState.player2.name||'N/D'}`, lm, y); y+=ls*1.5; doc.setFontSize(11); doc.setFont(undefined,'bold'); doc.text("Nazioni:", lm, y); y+=ls; doc.setFont(undefined,'normal'); (localGameState.player2.team||[]).forEach((id,i)=>{ doc.text(`${i+1}. ${getNationName(id)}`, lm+5, y); y+=ls; }); if (!(localGameState.player2.team||[]).length){ doc.text("- Nessuna", lm+5, y); y+=ls; } y+=ls/2; doc.setFont(undefined,'bold'); doc.text(`Eroi: ${getHeroText(localGameState.player2.heroChoice)}`, lm, y); const fn=`Riepilogo_${roomId}.pdf`; doc.save(fn); console.log("PDF generato:", fn); playSound('complete'); if (thankYouModal) { thankYouModal.style.display='flex'; void thankYouModal.offsetWidth; thankYouModal.classList.add('visible'); } else { alert("Lo Staff Supremacy 1914..."); } if(downloadPdfBtn) downloadPdfBtn.style.display='none'; if(resetBtn) resetBtn.style.display='none'; } catch (err) { console.error("Errore generazione PDF:", err); alert("Errore creazione PDF."); playSound('error'); if(downloadPdfBtn) downloadPdfBtn.disabled=false; } }
         downloadPdfBtn.addEventListener('click', () => { playSound('click'); downloadPdfBtn.disabled = true; generateAndDownloadPDF(); });
         modalCloseBtn.addEventListener('click', () => { playSound('click'); if (thankYouModal) { thankYouModal.classList.remove('visible'); setTimeout(() => { thankYouModal.style.display = 'none'; }, 300); } });
         thankYouModal.addEventListener('click', (event) => { if (event.target === thankYouModal) { modalCloseBtn.click(); } });
 
         function getHeroStatusText(choice) { if (choice === true) return "Eroi Schierati"; if (choice === false) return "Nessun Eroe"; return "In attesa..."; }
-        function populateSummary() { /* ... (invariata) ... */ document.getElementById('summary-p1-name').textContent = localGameState.player1.name || 'N/D'; document.getElementById('summary-p2-name').textContent = localGameState.player2.name || 'N/D'; const heroTextP1 = getHeroStatusText(localGameState.player1.heroChoice); const heroP1El = document.getElementById('summary-p1-hero'); heroP1El.textContent = heroTextP1; heroP1El.className = `hero-decision ${localGameState.player1.heroChoice === true ? 'yes' : (localGameState.player1.heroChoice === false ? 'no' : '')}`; const heroTextP2 = getHeroStatusText(localGameState.player2.heroChoice); const heroP2El = document.getElementById('summary-p2-hero'); heroP2El.textContent = heroTextP2; heroP2El.className = `hero-decision ${localGameState.player2.heroChoice === true ? 'yes' : (localGameState.player2.heroChoice === false ? 'no' : '')}`; const listP1 = document.getElementById('summary-p1-nations'); listP1.innerHTML = ''; (localGameState.player1.team || []).forEach(id => { const nation = allNations.find(n => n.id === id); const li = document.createElement('li'); li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`; listP1.appendChild(li); }); const listP2 = document.getElementById('summary-p2-nations'); listP2.innerHTML = ''; (localGameState.player2.team || []).forEach(id => { const nation = allNations.find(n => n.id === id); const li = document.createElement('li'); li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`; listP2.appendChild(li); }); }
-
-        function updateUI() {
-            player1El.querySelector('h2').textContent = localGameState.player1?.name ? `Comando 1: ${localGameState.player1.name}` : "Comando 1 (Attendere)";
-            player2El.querySelector('h2').textContent = localGameState.player2?.name ? `Comando 2: ${localGameState.player2.name}` : "Comando 2 (Attendere)";
-            player1El.classList.toggle('active', localGameState.currentPlayer === 1 && localGameState.gamePhase === "draft");
-            player2El.classList.toggle('active', localGameState.currentPlayer === 2 && localGameState.gamePhase === "draft");
-
-            renderTeams();
-            updateGamePhaseDisplay();
-            renderNations();
-
-            const currentPhase = localGameState.gamePhase;
-            nationsContainer.style.display = (currentPhase === 'draft') ? 'block' : 'none';
-            heroSelectionSection.style.display = (currentPhase === 'hero_selection') ? 'block' : 'none';
-            summarySection.style.display = (currentPhase === 'summary') ? 'block' : 'none';
-
-            if (currentPhase === 'hero_selection') {
-                const myChoice = localGameState[`player${playerRole}`]?.heroChoice;
-                const opponentRole = playerRole === 1 ? 2 : 1;
-                const opponentChoice = localGameState[`player${opponentRole}`]?.heroChoice;
-                const shouldBeDisabled = !(myChoice === null || typeof myChoice === 'undefined');
-                //console.log(`UI Hero: Setting buttons disabled = ${shouldBeDisabled}`);
-
-                heroYesBtn.disabled = shouldBeDisabled;
-                heroNoBtn.disabled = shouldBeDisabled;
-                heroYesBtn.classList.toggle('selected', myChoice === true);
-                heroNoBtn.classList.toggle('selected', myChoice === false);
-                heroWaitMessage.style.display = (shouldBeDisabled && (opponentChoice === null || typeof opponentChoice === 'undefined')) ? 'block' : 'none';
-                heroChoiceButtons.style.display = 'block';
-            } else {
-                 heroChoiceButtons.style.display = 'none';
-                 heroWaitMessage.style.display = 'none';
-                 heroYesBtn.classList.remove('selected');
-                 heroNoBtn.classList.remove('selected');
-            }
-
-            if (currentPhase === 'summary') {
-                 populateSummary();
-                 downloadPdfBtn.style.display = 'inline-block';
-                 downloadPdfBtn.disabled = false;
-                 if (thankYouModal && thankYouModal.classList.contains('visible')) {
-                     thankYouModal.classList.remove('visible');
-                     setTimeout(() => { thankYouModal.style.display = 'none'; }, 300);
-                 }
-            } else {
-                 downloadPdfBtn.style.display = 'none';
-            }
-
-            resetBtn.disabled = !roomId; copyBtn.disabled = !roomId;
-            resetBtn.style.display = (currentPhase === 'summary' || (thankYouModal && thankYouModal.classList.contains('visible'))) ? 'none' : 'inline-block';
-        }
-
+        function populateSummary() { document.getElementById('summary-p1-name').textContent = localGameState.player1.name || 'N/D'; document.getElementById('summary-p2-name').textContent = localGameState.player2.name || 'N/D'; const heroTextP1 = getHeroStatusText(localGameState.player1.heroChoice); const heroP1El = document.getElementById('summary-p1-hero'); heroP1El.textContent = heroTextP1; heroP1El.className = `hero-decision ${localGameState.player1.heroChoice === true ? 'yes' : (localGameState.player1.heroChoice === false ? 'no' : '')}`; const heroTextP2 = getHeroStatusText(localGameState.player2.heroChoice); const heroP2El = document.getElementById('summary-p2-hero'); heroP2El.textContent = heroTextP2; heroP2El.className = `hero-decision ${localGameState.player2.heroChoice === true ? 'yes' : (localGameState.player2.heroChoice === false ? 'no' : '')}`; const listP1 = document.getElementById('summary-p1-nations'); listP1.innerHTML = ''; (localGameState.player1.team || []).forEach(id => { const nation = allNations.find(n => n.id === id); const li = document.createElement('li'); li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`; listP1.appendChild(li); }); const listP2 = document.getElementById('summary-p2-nations'); listP2.innerHTML = ''; (localGameState.player2.team || []).forEach(id => { const nation = allNations.find(n => n.id === id); const li = document.createElement('li'); li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`; listP2.appendChild(li); }); }
+        function updateUI() { player1El.querySelector('h2').textContent = localGameState.player1?.name ? `Comando 1: ${localGameState.player1.name}` : "Comando 1 (Attendere)"; player2El.querySelector('h2').textContent = localGameState.player2?.name ? `Comando 2: ${localGameState.player2.name}` : "Comando 2 (Attendere)"; player1El.classList.toggle('active', localGameState.currentPlayer === 1 && localGameState.gamePhase === "draft"); player2El.classList.toggle('active', localGameState.currentPlayer === 2 && localGameState.gamePhase === "draft"); renderTeams(); updateGamePhaseDisplay(); renderNations(); const currentPhase = localGameState.gamePhase; nationsContainer.style.display = (currentPhase === 'draft') ? 'block' : 'none'; heroSelectionSection.style.display = (currentPhase === 'hero_selection') ? 'block' : 'none'; summarySection.style.display = (currentPhase === 'summary') ? 'block' : 'none'; if (currentPhase === 'hero_selection') { const myChoice = localGameState[`player${playerRole}`]?.heroChoice; const opponentRole = playerRole === 1 ? 2 : 1; const opponentChoice = localGameState[`player${opponentRole}`]?.heroChoice; const shouldBeDisabled = !(myChoice === null || typeof myChoice === 'undefined'); heroYesBtn.disabled = shouldBeDisabled; heroNoBtn.disabled = shouldBeDisabled; heroYesBtn.classList.toggle('selected', myChoice === true); heroNoBtn.classList.toggle('selected', myChoice === false); heroWaitMessage.style.display = (shouldBeDisabled && (opponentChoice === null || typeof opponentChoice === 'undefined')) ? 'block' : 'none'; heroChoiceButtons.style.display = 'block'; } else { heroChoiceButtons.style.display = 'none'; heroWaitMessage.style.display = 'none'; heroYesBtn.classList.remove('selected'); heroNoBtn.classList.remove('selected'); } if (currentPhase === 'summary') { populateSummary(); downloadPdfBtn.style.display = 'inline-block'; downloadPdfBtn.disabled = false; if (thankYouModal && thankYouModal.classList.contains('visible')) { thankYouModal.classList.remove('visible'); setTimeout(() => { thankYouModal.style.display = 'none'; }, 300); } } else { downloadPdfBtn.style.display = 'none'; } resetBtn.disabled = !roomId; copyBtn.disabled = !roomId; resetBtn.style.display = (currentPhase === 'summary' || (thankYouModal && thankYouModal.classList.contains('visible'))) ? 'none' : 'inline-block'; }
         function renderTeams() { const renderList = (teamEl, teamData, countEl) => { teamEl.innerHTML = ''; const currentTeam = teamData || []; if (currentTeam.length > 0) { currentTeam.forEach(nationId => { const nation = allNations.find(n => n.id === nationId); if (nation) { const nationEl = document.createElement('span'); nationEl.className = 'team-nation'; nationEl.innerHTML = `<img class="team-flag" src="https://flagcdn.com/w40/${nation.code}.png" alt="${nation.name}" title="${nation.name} - ${nation.description} (${nation.bonus})"><span style="margin-left: 5px;">${nation.name}</span>`; teamEl.appendChild(nationEl); } else { console.warn("ID nazione non trovato:", nationId); } }); countEl.textContent = currentTeam.length; } else { countEl.textContent = 0; } }; renderList(p1TeamEl, localGameState.player1?.team, p1CountEl); renderList(p2TeamEl, localGameState.player2?.team, p2CountEl); }
         function renderNations() { nationsListEl.innerHTML = ''; const p1Team = localGameState.player1?.team || []; const p2Team = localGameState.player2?.team || []; const selectedIds = new Set([...p1Team, ...p2Team]); const canSelect = localGameState.gamePhase === "draft" && localGameState.currentPlayer === playerRole; allNations.forEach(nation => { const isSelected = selectedIds.has(nation.id); const nationCard = document.createElement('div'); nationCard.className = 'nation-card'; nationCard.dataset.nationId = nation.id; const tooltipHtml = `<div class="nation-tooltip"><strong>${nation.name}</strong><br>Bonus: ${nation.bonus || 'N/D'}<br><i>${nation.description || ''}</i></div>`; nationCard.innerHTML = `<img class="flag" src="https://flagcdn.com/w80/${nation.code}.png" alt="${nation.name}" title="${nation.name}"><div class="name">${nation.name}</div>${tooltipHtml}`; nationCard.onclick = null; nationCard.onmouseover = null; nationCard.onmouseout = null; const tooltipElement = nationCard.querySelector('.nation-tooltip'); if (isSelected) { nationCard.classList.add('disabled'); } else { nationCard.onmouseover = () => { if (tooltipElement) tooltipElement.style.display = 'block'; }; nationCard.onmouseout = () => { if (tooltipElement) tooltipElement.style.display = 'none'; }; if (canSelect) { nationCard.classList.add('available'); nationCard.onclick = () => selectNationWithAnimation(nationCard, nation); } } nationsListEl.appendChild(nationCard); }); }
         function updateGamePhaseDisplay() { const phase = localGameState.gamePhase; let mainTextContent = "Attendere ordini..."; gamePhaseEl.style.color = '#4E3E2D'; let firstChild = gamePhaseEl.firstChild; while(firstChild && firstChild.nodeType !== Node.ELEMENT_NODE && firstChild.id !== 'hero-status-p1' && firstChild.id !== 'hero-status-p2') { gamePhaseEl.removeChild(firstChild); firstChild = gamePhaseEl.firstChild; } if (firstChild && (firstChild.tagName === 'SPAN' || firstChild.nodeType === Node.TEXT_NODE || firstChild.tagName === 'SMALL' || firstChild.tagName === 'BR')) { gamePhaseEl.removeChild(firstChild); } heroStatusP1.style.display = 'none'; heroStatusP1.textContent = ''; heroStatusP2.style.display = 'none'; heroStatusP2.textContent = ''; switch (phase) { case "waiting": const wp1Name = localGameState.player1?.name; const wp2Name = localGameState.player2?.name; if (wp1Name && !wp2Name) { mainTextContent = `Attendere Comando 2... <br><small>Inviare collegamento stanza!</small>`; } else if (!wp1Name && wp2Name) { mainTextContent = `Attendere Comando 1...`; } else if (!wp1Name && !wp2Name) { mainTextContent = `Attendere Comandanti...`; } else { mainTextContent = "Quartier Generale pronto. Attendere inizio mobilitazione..."; } break; case "draft": const dp1Name = localGameState.player1?.name; const dp2Name = localGameState.player2?.name; const dTurnNumber = localGameState.currentPlayer; const dCurrentTurnPlayerName = dTurnNumber === 1 ? dp1Name : dp2Name; if (!dCurrentTurnPlayerName) { mainTextContent = "Attendere..."; break; } if (dTurnNumber === playerRole) { mainTextContent = `<span style="color: #8B0000; font-weight: bold;">Comando ${dTurnNumber}, Vostro Turno!</span> Selezionare nazione.`; } else { mainTextContent = `Attendere Comando ${dTurnNumber} (${dCurrentTurnPlayerName})...`; } break; case "completed": mainTextContent = "Selezione nazioni completata. Preparazione fase Eroi..."; break; case "hero_selection": mainTextContent = "Decisione Schieramento Eroi"; heroStatusP1.textContent = `Comando 1: ${getHeroStatusText(localGameState.player1?.heroChoice)}`; heroStatusP2.textContent = `Comando 2: ${getHeroStatusText(localGameState.player2?.heroChoice)}`; heroStatusP1.style.display = 'block'; heroStatusP2.style.display = 'block'; break; case "summary": mainTextContent = "Riepilogo Finale Selezione"; gamePhaseEl.style.color = '#006400'; break; default: mainTextContent = `Stato Sconosciuto: ${phase}`; gamePhaseEl.style.color = 'red'; } gamePhaseEl.insertAdjacentHTML('afterbegin', mainTextContent); }
@@ -361,7 +235,6 @@
     </script>
 
     <!-- Riferimento Regole Sicurezza (SENZA /draft_history) -->
-     <!-- ... -->
-
+    <!-- ... (le regole semplificate che si salvano) ... -->
 </body>
 </html>
