@@ -414,12 +414,12 @@ Ecco l'intero codice HTML con le modifiche ai percorsi audio nello script. **Ric
 
         // --- Definizione Oggetti Audio ---
         const sounds = {
-            click: new Audio('sounds/click.mp3'),     // <-- USA PERCORSI RELATIVI!
-            turn: new Audio('sounds/turn.mp3'),       // <-- USA PERCORSI RELATIVI!
-            heroYes: new Audio('sounds/hero_yes.mp3'), // <-- USA PERCORSI RELATIVI!
-            heroNo: new Audio('sounds/hero_no.mp3'),   // <-- USA PERCORSI RELATIVI!
-            error: new Audio('sounds/error.mp3'),     // <-- USA PERCORSI RELATIVI!
-            complete: new Audio('sounds/complete.mp3') // <-- USA PERCORSI RELATIVI!
+            click: new Audio('sound/click.mp3'),     // <-- USA PERCORSI RELATIVI!
+            turn: new Audio('sound/turn.mp3'),       // <-- USA PERCORSI RELATIVI!
+            heroYes: new Audio('sound/hero_yes.mp3'), // <-- USA PERCORSI RELATIVI!
+            heroNo: new Audio('sound/hero_no.mp3'),   // <-- USA PERCORSI RELATIVI!
+            error: new Audio('sound/error.mp3'),     // <-- USA PERCORSI RELATIVI!
+            complete: new Audio('sound/complete.mp3') // <-- USA PERCORSI RELATIVI!
         };
         Object.values(sounds).forEach(sound => { sound.preload = 'auto'; sound.volume = 0.6; });
 
