@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Scelta Nazioni Supremacy 1914 ITA</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- jsPDF Library (caricata PRIMA dello script principale) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* Stile CSS v3 "Wow+" (invariato) */
+        :root {
+            --color-background: #E8D8C1; --color-container-bg: rgba(248, 244, 232, 0.94); --color-container-border: #B8AE9C; --color-text-dark: #3D2B1F; --color-text-medium: #5A4735; --color-text-light: #FDFBF5; --color-accent-dark: #8B0000; --color-accent-medium: #7E6C5A; --color-accent-light: #9C8C7A; --color-disabled-bg: #D8D0B8; --color-disabled-border: #B8AE9C; --color-disabled-text: #6F6659; --color-player-bg: #EFE6CD; --color-player-active-bg: #E0D8C0; --color-card-bg: #FCF9F0; --color-card-hover-bg: #FFFFF5; --color-list-bg: rgba(255, 255, 255, 0.95);
+            --font-serif: 'Georgia', 'Times New Roman', Times, serif; --font-serif-display: 'Garamond', 'Times New Roman', serif; --font-sans-serif: 'Helvetica Neue', Helvetica, Arial, sans-serif; --font-mono: 'Courier New', Courier, monospace;
+            --base-border-radius: 4px; --transition-speed: 0.25s; --shadow-color: rgba(0, 0, 0, 0.15); --shadow-color-darker: rgba(0, 0, 0, 0.25);
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { background-image: url('https://clan.cloudflare.steamstatic.com/images/34123292/58502dadd0af1a8c8758d8c8a7f77978d01c0e6a.jpg'); background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed; font-family: var(--font-serif); margin: 0; padding: 25px; color: var(--color-text-dark); min-height: 100vh; line-height: 1.65; overflow-x: hidden; position: relative; }
+        body::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; box-shadow: inset 0 0 150px rgba(0,0,0,0.3); pointer-events: none; z-index: -1; }
+        .container { max-width: 1100px; margin: 25px auto; background-color: var(--color-container-bg); padding: 35px; border-radius: var(--base-border-radius); box-shadow: 0 5px 25px var(--shadow-color-darker); border: 1px solid var(--color-container-border); position: relative; }
+        h1 { text-align: center; color: var(--color-text-medium); margin-top: 0; margin-bottom: 40px; font-family: var(--font-serif-display); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid var(--color-accent-light); padding-bottom: 18px; font-size: 2em; text-shadow: 1px 1px 2px rgba(255,255,255,0.3); }
+        h2, h3 { font-family: var(--font-serif-display); font-weight: 700; text-transform: uppercase; color: var(--color-text-medium); letter-spacing: 1px; }
+        .game-phase { margin-bottom: 30px; padding: 18px 25px; background-color: rgba(216, 200, 168, 0.92); border-radius: var(--base-border-radius); text-align: center; font-weight: bold; border: 1px dashed var(--color-accent-light); color: #4E3E2D; min-height: 50px; display: flex; align-items: center; justify-content: center; flex-direction: column; font-size: 1.15em; transition: background-color var(--transition-speed) ease; box-shadow: inset 0 0 8px rgba(0,0,0,0.08); }
+        .game-phase span[style*="color"] { text-shadow: 1px 1px 1px rgba(255,255,255,0.4); }
+        .hero-status { font-size: 0.85em; font-style: italic; margin-top: 5px; color: var(--color-text-medium); display: block; width: 100%; }
+        .timer-container { text-align: center; margin: 25px 0; }
+        .timer { font-size: 1.5em; color: var(--color-accent-dark); margin: 0 0 8px 0; text-align: center; min-height: 1.5em; font-family: var(--font-mono); background-color: rgba(248, 244, 232, 0.8); padding: 5px 10px; display: inline-block; border-radius: var(--base-border-radius); border: 1px solid rgba(139,0,0,0.4); box-shadow: 0 1px 3px var(--shadow-color); }
+        .timer-bar-container { width: 250px; max-width: 80%; height: 8px; background-color: rgba(0, 0, 0, 0.1); border: 1px solid var(--color-accent-light); border-radius: 4px; margin: 0 auto; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); }
+        .timer-bar { height: 100%; width: 100%; background: linear-gradient(to right, var(--color-accent-dark), lighten(var(--color-accent-dark), 15%)); border-radius: 3px; transition: width 1s linear; }
+        .players-container { display: flex; justify-content: space-between; margin-bottom: 40px; flex-wrap: wrap; gap: 25px; }
+        .player { width: 100%; padding: 25px; background: linear-gradient(to bottom, var(--color-player-bg), darken(var(--color-player-bg), 4%)); border-radius: var(--base-border-radius); box-shadow: 0 2px 6px var(--shadow-color); border: 1px solid var(--color-container-border); box-sizing: border-box; transition: all var(--transition-speed) ease; border-left: 5px solid transparent; }
+        @media (min-width: 768px) { .player { width: calc(50% - 13px); } }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 2px 6px var(--shadow-color); } 50% { transform: scale(1.02); box-shadow: 0 5px 15px var(--shadow-color-darker); } 100% { transform: scale(1); box-shadow: 0 2px 6px var(--shadow-color); } }
+        .player.active { border-left-color: var(--color-accent-dark); }
+        .player.turn-pulse { animation: pulse 0.6s ease-in-out; }
+        .player h2 { margin-top: 0; border-bottom: 1px solid var(--color-accent-light); padding-bottom: 12px; font-size: 1.25em; }
+        .hero-selection-section, .summary-section { margin-top: 30px; padding: 25px; background-color: rgba(216, 200, 168, 0.8); border: 1px solid var(--color-accent-light); border-radius: var(--base-border-radius); text-align: center; }
+        .hero-selection-section h3, .summary-section h3 { margin-top: 0; border-bottom: 1px solid var(--color-accent-light); padding-bottom: 10px; margin-bottom: 20px; }
+        .hero-choice-buttons button { margin: 0 10px; font-size: 0.95em; padding: 8px 18px; }
+        .hero-choice-buttons button.selected { background: linear-gradient(to bottom, var(--color-accent-dark), darken(var(--color-accent-dark), 8%)); border-color: var(--color-accent-dark); color: var(--color-text-light); cursor: default; }
+        .summary-details { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; text-align: left; margin-bottom: 20px; }
+        .summary-player { width: calc(50% - 20px); min-width: 250px; }
+        .summary-player ul { list-style: none; padding-left: 0; }
+        .summary-player li { margin-bottom: 5px; }
+        .summary-player .hero-decision { font-weight: bold; }
+        .summary-player .hero-decision .yes { color: darkgreen; }
+        .summary-player .hero-decision .no { color: var(--color-accent-dark); }
+        #download-confirmation { /* Rimosso stile display:none qui, gestito da JS */ font-style: italic; color: var(--color-text-medium); margin-top: 15px; }
+
+        .nations-container { margin-top: 30px; }
+        .nations-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin: 25px 0; }
+        @media (max-width: 800px) { .nations-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); } }
+        @media (max-width: 480px) { .nations-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; } }
+        .nation-card { border: 1px solid var(--color-accent-light); border-radius: var(--base-border-radius); padding: 12px; text-align: center; cursor: default; transition: all var(--transition-speed) ease-in-out; background: linear-gradient(to bottom, var(--color-card-bg), darken(var(--color-card-bg), 3%)); box-shadow: 0 3px 7px var(--shadow-color); position: relative; overflow: visible; }
+        .nation-card.available:hover { border-color: var(--color-text-medium); background: linear-gradient(to bottom, var(--color-card-hover-bg), darken(var(--color-card-hover-bg), 2%)); cursor: pointer; transform: translateY(-5px) scale(1.03); box-shadow: 0 8px 18px var(--shadow-color-darker); z-index: 10; }
+        .nation-card.available:active { transform: translateY(-2px) scale(1.01); box-shadow: 0 4px 10px var(--shadow-color); }
+        .nation-card.selecting { opacity: 0.7; transform: scale(0.95); transition: opacity 0.1s ease, transform 0.1s ease; }
+        .nation-card.disabled { opacity: 0.55; cursor: not-allowed; background: var(--color-disabled-bg); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); border-color: var(--color-disabled-border); transform: none !important; }
+        .nation-card.disabled:hover { transform: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .flag { width: 80px; height: 50px; object-fit: cover; border: 1px solid var(--color-container-border); margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto; filter: sepia(10%); border-radius: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .nation-card.disabled .flag { filter: grayscale(95%) opacity(60%); box-shadow: none; }
+        .nation-card .name { font-weight: bold; font-family: var(--font-sans-serif); font-size: 1em; color: var(--color-text-medium); }
+        .nation-tooltip { display: none; position: absolute; bottom: calc(100% + 5px); left: 50%; transform: translateX(-50%); background-color: rgba(45, 35, 25, 0.95); color: var(--color-text-light); padding: 8px 12px; border-radius: var(--base-border-radius); font-size: 0.85em; font-family: var(--font-sans-serif); white-space: nowrap; z-index: 20; border: 1px solid var(--color-accent-light); box-shadow: 0 2px 5px rgba(0,0,0,0.3); pointer-events: none; }
+        .nation-tooltip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: rgba(45, 35, 25, 0.95) transparent transparent transparent; }
+        .team-list { min-height: 120px; border: 1px dashed var(--color-accent-medium); border-radius: var(--base-border-radius); padding: 15px; margin-top: 20px; background: var(--color-list-bg); box-shadow: inset 0 1px 5px rgba(0,0,0,0.07); }
+        .team-nation { display: inline-flex; align-items: center; margin: 5px; padding: 6px 12px; background: var(--color-player-bg); border-radius: 15px; font-size: 0.9em; border: 1px solid var(--color-container-border); box-shadow: 0 1px 3px var(--shadow-color); transition: transform 0.2s ease; }
+        .team-nation:hover { transform: scale(1.05); }
+        .team-flag { width: 20px; height: 14px; margin-right: 8px; border: 1px solid #aaa; object-fit: cover; filter: sepia(10%); border-radius: 1px;}
+        .controls { text-align: center; margin-top: 40px; }
+        button i.fa-solid { margin-right: 8px; }
+        #copy-btn { padding: 10px 15px; }
+        #copy-btn i.fa-solid { margin-right: 0; margin-left: 0;}
+        #copy-btn span { display: none; }
+        #reset-btn i.fa-solid { margin-right: 6px; }
+        button { background: linear-gradient(to bottom, var(--color-accent-medium), darken(var(--color-accent-medium), 8%)); color: var(--color-text-light); border: 1px solid var(--color-text-medium); padding: 12px 28px; border-radius: var(--base-border-radius); cursor: pointer; font-size: 1.05em; font-family: var(--font-serif-display); font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; transition: all var(--transition-speed) ease; margin: 8px; box-shadow: 0 3px 6px var(--shadow-color-darker); text-shadow: 1px 1px 1px rgba(0,0,0,0.3); }
+        button:hover:not(:disabled) { background: linear-gradient(to bottom, var(--color-accent-light), darken(var(--color-accent-light), 8%)); border-color: var(--color-text-dark); box-shadow: 0 5px 10px var(--shadow-color-darker); transform: translateY(-2px); }
+        button:active:not(:disabled) { transform: translateY(0px); box-shadow: 0 1px 3px var(--shadow-color); }
+        button:disabled { background: var(--color-disabled-bg); border-color: var(--color-disabled-border); color: var(--color-disabled-text); cursor: not-allowed; opacity: 0.6; box-shadow: none; text-shadow: none; transform: none; }
+        .login-container { text-align: center; margin: 60px auto; max-width: 450px; padding: 35px; background-color: rgba(248, 244, 232, 0.93); border-radius: var(--base-border-radius); box-shadow: 0 5px 25px var(--shadow-color-darker); border: 1px solid var(--color-container-border); }
+        .login-container h3 { color: var(--color-text-medium); font-family: var(--font-serif-display); margin-bottom: 30px; text-transform: uppercase; font-size: 1.4em; }
+        input[type="text"] { padding: 14px; margin: 12px 0; border: 1px solid var(--color-accent-light); border-radius: var(--base-border-radius); width: 100%; box-sizing: border-box; background-color: #FFFDF5; color: var(--color-text-dark); font-family: var(--font-serif); font-size: 1.05em; transition: all var(--transition-speed) ease; }
+        input[type="text"]:focus { border-color: var(--color-text-medium); outline: none; box-shadow: 0 0 8px rgba(90, 71, 53, 0.4); background-color: #fff; }
+        .room-info { background-color: rgba(216, 200, 168, 0.92); padding: 12px 18px; border-radius: var(--base-border-radius); margin-bottom: 30px; text-align: center; border: 1px solid var(--color-accent-light); font-size: 1em; color: #4E3E2D; box-shadow: inset 0 0 5px rgba(0,0,0,0.1); }
+        .room-info strong { color: var(--color-text-dark); font-weight: bold;}
+        .room-info button { padding: 6px 10px; font-size: 1em; line-height: 1; margin-left: 15px; vertical-align: middle; background-color: var(--color-accent-light); border-color: var(--color-text-medium); }
+        .room-info button:hover:not(:disabled) { background-color: darken(var(--color-accent-light), 7%); border-color: var(--color-text-dark); }
+
+         /* --- Stile Finestra Modale --- */
+         .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.65); /* Leggermente più scuro */
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+         }
+         .modal-overlay.visible { opacity: 1; }
+         .modal-content {
+            background-color: var(--color-container-bg); padding: 35px 45px; /* Più padding */
+            border-radius: var(--base-border-radius); box-shadow: 0 5px 25px rgba(0,0,0,0.4);
+            border: 1px solid var(--color-container-border); max-width: 550px; width: 95%;
+            text-align: center; position: relative; transform: scale(0.9);
+            transition: transform 0.3s ease;
+         }
+         .modal-overlay.visible .modal-content { transform: scale(1); }
+         .modal-content h2 { color: var(--color-text-medium); margin-top: 0; margin-bottom: 20px; font-family: var(--font-serif-display); font-size: 1.5em; }
+         .modal-content p { margin-bottom: 12px; line-height: 1.7; color: var(--color-text-dark); }
+         .modal-content p small { color: var(--color-text-medium); }
+         .modal-close-btn {
+            position: absolute; top: 10px; right: 15px; background: transparent; border: none;
+            font-size: 2.2em; color: var(--color-accent-light); cursor: pointer;
+            padding: 0 5px; line-height: 1; transition: color var(--transition-speed) ease;
+         }
+         .modal-close-btn:hover { color: var(--color-text-dark); }
+         /* ----------------------------- */
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scelta Nazioni Supremacy 1914 ITA</h1>
+        <div id="login-container" class="login-container">
+            <h3>Accesso Ufficiali</h3>
+            <input type="text" id="player-name" placeholder="Nome in codice" required>
+            <input type="text" id="room-id" placeholder="ID Stanza Strategica (o lasciare vuoto)">
+            <button id="join-btn"><i class="fa-solid fa-right-to-bracket"></i> Entra / Crea Stanza</button>
+        </div>
+
+        <div id="game-container" style="display: none;">
+            <div class="room-info">
+                Stanza: <strong id="display-room-id"></strong> |
+                Ufficiale: <strong id="display-player-name"></strong> |
+                Designazione: <strong id="display-player-role"></strong>
+                <button id="copy-btn" title="Copia Collegamento Stanza"><i class="fa-solid fa-link"></i></button>
+            </div>
+
+            <div class="game-phase" id="game-phase">
+                <!-- Contenuto Fase gestito da JS -->
+                <div class="hero-status" id="hero-status-p1" style="display: none;"></div>
+                <div class="hero-status" id="hero-status-p2" style="display: none;"></div>
+            </div>
+
+            <div class="timer-container">
+                 <div class="timer" id="timer"></div>
+                 <div class="timer-bar-container" id="timer-bar-container" style="display: none;">
+                     <div class="timer-bar" id="timer-bar"></div>
+                 </div>
+            </div>
+
+            <div class="players-container">
+                <div class="player" id="player1">
+                    <h2>Comando 1</h2>
+                    <div>Nazioni mobilitate: <span id="p1-count">0</span>/5</div>
+                    <div class="team-list" id="p1-team"></div>
+                </div>
+                <div class="player" id="player2">
+                    <h2>Comando 2</h2>
+                    <div>Nazioni mobilitate: <span id="p2-count">0</span>/5</div>
+                    <div class="team-list" id="p2-team"></div>
+                </div>
+            </div>
+
+            <div class="nations-container" id="nations-container">
+                <h3>Nazioni Disponibili per l'Alleanza:</h3>
+                <div class="nations-grid" id="nations-list"></div>
+            </div>
+
+            <div class="hero-selection-section" id="hero-selection-section" style="display: none;">
+                <h3>Decisione Schieramento Eroi</h3>
+                <p>Confermare l'utilizzo degli Eroi per questa sfida?</p>
+                <div class="hero-choice-buttons" id="hero-choice-buttons">
+                    <button id="hero-yes-btn"><i class="fa-solid fa-shield-halved"></i> Schiera Eroi</button>
+                    <button id="hero-no-btn"><i class="fa-solid fa-ban"></i> Nessun Eroe</button>
+                </div>
+                <p id="hero-wait-message" style="display: none; margin-top: 15px; font-style: italic;">Decisione registrata. Attendere l'avversario...</p>
+            </div>
+
+             <div class="summary-section" id="summary-section" style="display: none;">
+                <h3>Riepilogo Finale Selezione</h3>
+                <div class="summary-details">
+                    <div class="summary-player" id="summary-p1">
+                        <h4>Comando 1: <span id="summary-p1-name"></span></h4>
+                        <strong>Nazioni:</strong>
+                        <ul id="summary-p1-nations"></ul>
+                        <strong>Eroi:</strong> <span class="hero-decision" id="summary-p1-hero"></span>
+                    </div>
+                    <div class="summary-player" id="summary-p2">
+                         <h4>Comando 2: <span id="summary-p2-name"></span></h4>
+                        <strong>Nazioni:</strong>
+                        <ul id="summary-p2-nations"></ul>
+                        <strong>Eroi:</strong> <span class="hero-decision" id="summary-p2-hero"></span>
+                    </div>
+                </div>
+                 <button id="download-pdf-btn" style="margin-top: 25px;"><i class="fa-solid fa-file-pdf"></i> Scarica Riepilogo (PDF)</button>
+            </div>
+
+            <div class="controls">
+                <button id="reset-btn"><i class="fa-solid fa-flag"></i> Ritirata</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finestra Modale di Conferma/Ringraziamento -->
+    <div id="thank-you-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-close-btn" id="modal-close-btn" title="Chiudi">×</button>
+            <h2>Selezione Completata!</h2>
+            <p>Lo Staff Supremacy 1914 - 2025 ti ringrazia per la collaborazione e augura a tutta la squadra una buona sfida!</p>
+            <p><small>(Il riepilogo PDF è stato scaricato.)</small></p>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDK v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        // --- CONFIGURAZIONE FIREBASE REALE ---
+        const firebaseConfig = { apiKey: "AIzaSyBMSMS7TCBVATqdoCqNX99AriyiSpy9y8E", authDomain: "supremacy-web.firebaseapp.com", databaseURL: "https://supremacy-web-default-rtdb.europe-west1.firebasedatabase.app", projectId: "supremacy-web", storageBucket: "supremacy-web.firebasestorage.app", messagingSenderId: "30781020744", appId: "1:30781020744:web:81eee78242a060a9d6167d", measurementId: "G-VTMYEXEDSW" };
+        let database;
+        try { if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); console.log("Firebase inizializzato."); } else { firebase.app(); console.log("Firebase già inizializzato."); } database = firebase.database(); } catch (e) { console.error("ERRORE INIT FIREBASE:", e); alert("Errore Inizializzazione Firebase."); document.body.innerHTML = '<h1 style="color:red; text-align:center;">Errore Critico: Inizializzazione Firebase fallita.</h1>'; }
+        // Inizializza jsPDF
+        const { jsPDF } = window.jspdf;
+
+        const allNations = [ { id: 1, name: "Marocco", code: "ma", bonus: "Posizione strategica", description: "Crocevia tra Africa ed Europa" }, { id: 2, name: "Spagna", code: "es", bonus: "Esplorazione +10%", description: "Terra di conquistadores" }, { id: 3, name: "Francia", code: "fr", bonus: "Diplomazia +15%", description: "Terra di rivoluzioni e vino" }, { id: 4, name: "Gran Bretagna", code: "gb", bonus: "Commercio +15%", description: "Impero marittimo storico" }, { id: 5, name: "Germania", code: "de", bonus: "Produzione +20%", description: "Potenza industriale europea" }, { id: 6, name: "Italia", code: "it", bonus: "Cultura +10%", description: "Patria dell'arte e della cucina" }, { id: 7, name: "Austria", code: "at", bonus: "Musica +10%", description: "Cuore dell'Europa centrale" }, { id: 8, name: "Turchia", code: "tr", bonus: "Posizione +15%", description: "Crocevia tra continenti" }, { id: 9, name: "Russia", code: "ru", bonus: "Territorio +25%", description: "Vasta nazione euroasiatica" }, { id: 10, name: "Svezia", code: "se", bonus: "Innovazione +10%", description: "Terra di tecnologia e natura" } ];
+        let localGameState = {}; let playerRole = null; let playerName = ""; let roomId = ""; let timerInterval = null; let roomRef = null;
+        let turnStartTime = 0; let timerDuration = 3600000;
+
+        // --- Elementi DOM ---
+        const loginContainer = document.getElementById('login-container'); const gameContainer = document.getElementById('game-container'); const playerNameInput = document.getElementById('player-name'); const roomIdInput = document.getElementById('room-id'); const joinBtn = document.getElementById('join-btn'); const displayRoomId = document.getElementById('display-room-id'); const displayPlayerName = document.getElementById('display-player-name'); const displayPlayerRole = document.getElementById('display-player-role'); const nationsListEl = document.getElementById('nations-list'); const p1TeamEl = document.getElementById('p1-team'); const p2TeamEl = document.getElementById('p2-team'); const p1CountEl = document.getElementById('p1-count'); const p2CountEl = document.getElementById('p2-count'); const gamePhaseEl = document.getElementById('game-phase'); const timerEl = document.getElementById('timer'); const player1El = document.getElementById('player1'); const player2El = document.getElementById('player2'); const resetBtn = document.getElementById('reset-btn'); const copyBtn = document.getElementById('copy-btn');
+        const nationsContainer = document.getElementById('nations-container');
+        const heroSelectionSection = document.getElementById('hero-selection-section');
+        const heroChoiceButtons = document.getElementById('hero-choice-buttons');
+        const heroYesBtn = document.getElementById('hero-yes-btn');
+        const heroNoBtn = document.getElementById('hero-no-btn');
+        const heroWaitMessage = document.getElementById('hero-wait-message');
+        const summarySection = document.getElementById('summary-section');
+        const heroStatusP1 = document.getElementById('hero-status-p1');
+        const heroStatusP2 = document.getElementById('hero-status-p2');
+        const timerBarContainer = document.getElementById('timer-bar-container');
+        const timerBar = document.getElementById('timer-bar');
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        const thankYouModal = document.getElementById('thank-you-modal');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        // --- Funzioni di Gioco ---
+        function generateRoomId() { return Math.random().toString(36).substring(2, 6).toUpperCase(); }
+        joinBtn.addEventListener('click', () => { playerName = playerNameInput.value.trim(); let potentialRoomId = roomIdInput.value.trim().toUpperCase(); console.log("Join cliccato. Nome:", playerName, "Room:", potentialRoomId || "(Nuova)"); if (!playerName) { alert("Inserire nome in codice."); return; } if (!database) { console.error("DB non disponibile."); alert("Errore Database."); return; } joinBtn.disabled = true; if (!potentialRoomId) { roomId = generateRoomId(); console.log(`Creazione stanza: ${roomId}`); playerRole = 1; initializeGame(); } else { roomId = potentialRoomId; console.log(`Tentativo join stanza: ${roomId}`); joinRoom(); } });
+        function joinRoom() { console.log("Funzione joinRoom"); if (!database) { console.error("DB Error"); joinBtn.disabled = false; return; } const currentRoomRef = database.ref(`rooms/${roomId}`); currentRoomRef.once('value').then(snapshot => { if (snapshot.exists()) { const roomData = snapshot.val() || {}; const p1Data = roomData.player1 || {}; const p2Data = roomData.player2 || {}; const p1Exists = !!p1Data.name; const p2Exists = !!p2Data.name; if (p1Exists && p1Data.name === playerName) { console.log("Riconnesso G1"); alert("Riconnesso come Comando 1."); playerRole = 1; initializeGameView(); listenToRoomChanges(); return; } if (p2Exists && p2Data.name === playerName) { console.log("Riconnesso G2"); alert("Riconnesso come Comando 2."); playerRole = 2; initializeGameView(); listenToRoomChanges(); return; } if (p1Exists && p2Exists) { console.warn("Stanza piena"); alert("Stanza strategica piena!"); resetLoginUI(); return; } playerRole = p1Exists ? 2 : 1; console.log("Assegnato ruolo:", playerRole); initializeGame(); } else { console.warn("Stanza non trovata:", roomId); alert("Stanza non trovata!"); resetLoginUI(); } }).catch(error => { console.error("Errore lettura DB (joinRoom):", error); alert("Errore connessione stanza: " + error.message); resetLoginUI(); }); }
+        function resetLoginUI() { console.log("Reset UI Login."); roomId = ""; if(roomRef) { roomRef.off("value"); roomRef = null;} playerRole = null; joinBtn.disabled = false; roomIdInput.value = ''; loginContainer.style.display = 'block'; gameContainer.style.display = 'none'; }
+        function initializeGameView() { loginContainer.style.display = 'none'; gameContainer.style.display = 'block'; displayRoomId.textContent = roomId; displayPlayerName.textContent = playerName; displayPlayerRole.textContent = `Comando ${playerRole}`; }
+        function initializeGame() { console.log("Funzione initializeGame (scrittura dati)"); if (!database) { console.error("DB Error"); resetLoginUI(); return; } initializeGameView(); const updates = {}; updates[`/rooms/${roomId}/player${playerRole}/name`] = playerName; updates[`/rooms/${roomId}/player${playerRole}/team`] = []; updates[`/rooms/${roomId}/player${playerRole}/heroChoice`] = null; const roomBaseRef = database.ref(`/rooms/${roomId}`); roomBaseRef.once('value').then(snapshot => { const roomData = snapshot.val() || {}; if (playerRole === 1 && !roomData.gamePhase) { console.log("G1 inizializza stato partita."); updates[`/rooms/${roomId}/currentPlayer`] = 1; updates[`/rooms/${roomId}/gamePhase`] = "waiting"; updates[`/rooms/${roomId}/timerEnd`] = null; updates[`/rooms/${roomId}/player1/heroChoice`] = null; updates[`/rooms/${roomId}/player2/heroChoice`] = null; } console.log("Invio updates:", updates); database.ref().update(updates).then(() => { console.log("DB aggiornato. Avvio listener."); listenToRoomChanges(); }).catch(error => { console.error("Errore Update DB (initializeGame):", error); alert("Errore creazione/aggiornamento stanza: " + error.message); handleGameEndCleanup(); }); }).catch(error => { console.error("Errore Read DB (initializeGame):", error); alert("Errore verifica stato stanza: " + error.message); handleGameEndCleanup(); }); }
+
+        function listenToRoomChanges() {
+            console.log("Avvio listener stanza:", roomId);
+            if (!database) { console.error("DB Error"); return; }
+            if (roomRef) { roomRef.off("value"); }
+
+            roomRef = database.ref(`rooms/${roomId}`);
+            roomRef.on('value', snapshot => {
+                if (!snapshot.exists()) { console.warn("Listener: Stanza cancellata."); if (document.getElementById('game-container').style.display !== 'none') { alert("La conferenza strategica è terminata."); handleGameEndCleanup(); } return; }
+                const roomData = snapshot.val(); if (!roomData || typeof roomData !== 'object') { console.error("Listener: Dati non validi.", roomData); return; }
+
+                const prevPlayer = localGameState.currentPlayer;
+                const prevPhase = localGameState.gamePhase;
+
+                const p1Data = roomData.player1 || { name: "", team: [], heroChoice: null };
+                const p2Data = roomData.player2 || { name: "", team: [], heroChoice: null };
+                const normalizeTeam = (team) => (!team ? [] : (Array.isArray(team) ? team : Object.values(team)));
+                localGameState = { player1: { name: p1Data.name || "", team: normalizeTeam(p1Data.team), heroChoice: p1Data.heroChoice }, player2: { name: p2Data.name || "", team: normalizeTeam(p2Data.team), heroChoice: p2Data.heroChoice }, currentPlayer: roomData.currentPlayer !== undefined ? roomData.currentPlayer : null, gamePhase: roomData.gamePhase || "waiting", timerEnd: roomData.timerEnd || null };
+
+                updateUI();
+
+                 if(localGameState.gamePhase === 'draft' && localGameState.currentPlayer !== prevPlayer && localGameState.currentPlayer !== null) {
+                      const activePlayerElement = document.getElementById(`player${localGameState.currentPlayer}`);
+                      if(activePlayerElement) {
+                          activePlayerElement.classList.remove('turn-pulse'); void activePlayerElement.offsetWidth; activePlayerElement.classList.add('turn-pulse');
+                          setTimeout(() => activePlayerElement.classList.remove('turn-pulse'), 600);
+                      }
+                 }
+
+                if (playerRole === 1) {
+                    if (localGameState.gamePhase === "waiting" && prevPhase === "waiting" && localGameState.player1.name && localGameState.player2.name) {
+                        console.log("Listener: G1 avvia draft."); startDraft();
+                    }
+                }
+
+                if (localGameState.gamePhase === "draft" && localGameState.timerEnd) {
+                    timerBarContainer.style.display = 'block'; startTimer();
+                } else {
+                    clearInterval(timerInterval); timerInterval = null; timerBarContainer.style.display = 'none';
+                }
+
+            }, errorObject => { console.error("Errore Listener DB:", errorObject); alert("Errore connessione persistente: " + errorObject.message); handleGameEndCleanup(); });
+        }
+
+        function startDraft() { console.log("Funzione startDraft"); if (!database || !roomId || localGameState.gamePhase !== 'waiting') { console.warn("startDraft: Chiamata non valida", localGameState.gamePhase); return; } turnStartTime = Date.now(); timerDuration = 3600000; const startTime = turnStartTime + timerDuration; const updates = { gamePhase: "draft", currentPlayer: 1, timerEnd: startTime }; console.log("Avvio draft:", updates); database.ref(`rooms/${roomId}`).update(updates).catch(error => { console.error("Errore Update DB (startDraft):", error); alert("Errore avvio draft: " + error.message); }); }
+        function startTimer() { clearInterval(timerInterval); timerInterval = null; if (!localGameState.timerEnd || localGameState.gamePhase !== 'draft') { timerEl.textContent = ''; timerBarContainer.style.display = 'none'; return; } turnStartTime = localGameState.timerEnd - timerDuration; const updateTimerDisplay = () => { const now = Date.now(); const endTime = localGameState.timerEnd; const remaining = endTime - now; if (remaining <= 0) { timerEl.textContent = "Tempo Scaduto!"; timerBar.style.width = '0%'; clearInterval(timerInterval); timerInterval = null; if (localGameState.currentPlayer === playerRole && localGameState.gamePhase === 'draft') { console.log("Timer scaduto per", playerRole); skipTurn(); } } else { const hours = Math.floor(remaining / 3600000); const minutes = Math.floor((remaining % 3600000) / 60000); const seconds = Math.floor((remaining % 60000) / 1000); timerEl.textContent = `Tempo: ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`; const elapsed = now - turnStartTime; let percentage = 100 - (elapsed / timerDuration * 100); if (percentage < 0) percentage = 0; if (percentage > 100) percentage = 100; timerBar.style.width = `${percentage}%`; } }; updateTimerDisplay(); timerInterval = setInterval(updateTimerDisplay, 1000); }
+        function skipTurn() { console.log("Funzione skipTurn"); if (!database || !roomId || localGameState.gamePhase !== 'draft' || localGameState.currentPlayer !== playerRole) { console.warn("skipTurn: Chiamata non valida."); return; } console.log(`Giocatore ${playerRole} salta il turno.`); const nextPlayer = localGameState.currentPlayer === 1 ? 2 : 1; turnStartTime = Date.now(); timerDuration = 3600000; const newTimerEnd = turnStartTime + timerDuration; database.ref(`rooms/${roomId}`).update({ currentPlayer: nextPlayer, timerEnd: newTimerEnd }).catch(error => console.error("Errore Update DB (skipTurn):", error)); }
+        function selectNationWithAnimation(cardElement, nation) { cardElement.classList.remove('available'); cardElement.classList.add('selecting'); cardElement.onclick = null; cardElement.onmouseover = null; cardElement.onmouseout = null; const tooltip = cardElement.querySelector('.nation-tooltip'); if(tooltip) tooltip.style.display = 'none'; setTimeout(() => { selectNation(nation); }, 150); }
+        function selectNation(nation) { console.log("Funzione selectNation:", nation?.name); if (!database || !roomId || !nation || typeof nation.id === 'undefined') { console.error("Dati mancanti per selectNation"); return; } if (localGameState.gamePhase !== "draft") { console.warn("Select: Non in draft"); alert("La selezione non è attiva."); return; } if (localGameState.currentPlayer !== playerRole) { console.warn("Select: Non il mio turno"); alert("Attendere il proprio turno."); return; } const playerTeam = localGameState[`player${playerRole}`]?.team || []; if (playerTeam.length >= 5) { console.warn("Select: Squadra piena"); alert("Limite nazioni raggiunto."); return; } const p1Team = localGameState.player1?.team || []; const p2Team = localGameState.player2?.team || []; if (p1Team.includes(nation.id) || p2Team.includes(nation.id)) { console.warn("Select: Nazione già presa"); alert(`${nation.name} già selezionata.`); return; } console.log(`CONFERMA: ${playerName} (P${playerRole}) seleziona ${nation.name}`); const teamKey = `player${playerRole}/team`; const newTeam = [...playerTeam, nation.id]; const nextPlayer = playerRole === 1 ? 2 : 1; turnStartTime = Date.now(); timerDuration = 3600000; const newTimerEnd = turnStartTime + timerDuration; let newPhase = "draft"; let newCurrentPlayer = nextPlayer; const p1Count = (playerRole === 1) ? newTeam.length : p1Team.length; const p2Count = (playerRole === 2) ? newTeam.length : p2Team.length; const updates = {}; updates[`/rooms/${roomId}/${teamKey}`] = newTeam; if (p1Count === 5 && p2Count === 5) { newPhase = "hero_selection"; newCurrentPlayer = null; updates[`/rooms/${roomId}/timerEnd`] = null; console.log("Selezione Nazioni Completata! Passaggio a Fase Eroi."); } else { updates[`/rooms/${roomId}/timerEnd`] = newTimerEnd; } updates[`/rooms/${roomId}/currentPlayer`] = newCurrentPlayer; updates[`/rooms/${roomId}/gamePhase`] = newPhase; console.log("Invio update selectNation:", updates); database.ref().update(updates).catch(error => { console.error("Errore Update DB (selectNation):", error); alert("Errore selezione nazione: " + error.message); }); }
+
+        // Gestione Scelta Eroi - CORRETTO con disable immediato e salvataggio riepilogo
+        function handleHeroChoice(choice) {
+            console.log(`handleHeroChoice chiamata con choice: ${choice}`);
+            heroYesBtn.disabled = true; heroNoBtn.disabled = true; heroWaitMessage.style.display = 'block';
+            if (!database || !roomId || playerRole === null) { console.error("handleHeroChoice: Stato DB/Stanza/Ruolo non valido."); heroYesBtn.disabled = false; heroNoBtn.disabled = false; heroWaitMessage.style.display = 'none'; return; }
+            if (localGameState.gamePhase !== 'hero_selection') { console.warn(`handleHeroChoice: Fase errata (${localGameState.gamePhase}). Esco.`); heroYesBtn.disabled = false; heroNoBtn.disabled = false; heroWaitMessage.style.display = 'none'; return; }
+
+            console.log("handleHeroChoice: Condizioni preliminari superate. Procedo con l'update.");
+            const myChoicePath = `/rooms/${roomId}/player${playerRole}/heroChoice`;
+            const opponentRole = playerRole === 1 ? 2 : 1;
+            const opponentChoicePath = `/rooms/${roomId}/player${opponentRole}/heroChoice`;
+            const updates = {}; updates[myChoicePath] = choice;
+
+            database.ref(opponentChoicePath).once('value').then(snapshot => {
+                 const opponentChoiceValue = snapshot.val();
+                 const opponentHasChosen = opponentChoiceValue !== null;
+                 console.log(`handleHeroChoice: Scelta avversario (${opponentRole}) letta: ${opponentChoiceValue}`);
+                 if (opponentHasChosen) {
+                     console.log("handleHeroChoice: Avversario ha già scelto. Passo a summary.");
+                     updates[`/rooms/${roomId}/gamePhase`] = "summary";
+                     updates[`/rooms/${roomId}/currentPlayer`] = null;
+                     updates[`/rooms/${roomId}/timerEnd`] = null;
+                 } else { console.log("handleHeroChoice: Attendo scelta avversario."); }
+
+                 database.ref().update(updates)
+                     .then(() => {
+                         console.log("Update DB per handleHeroChoice completato.");
+                         // Chiamata a saveSummaryToHistory è stata rimossa
+                      })
+                     .catch(error => { console.error("Errore update scelta eroi / cambio fase:", error); alert("Errore nel registrare la scelta o cambiare fase."); heroWaitMessage.style.display = 'none'; });
+            }).catch(error => { console.error("Errore lettura scelta avversario:", error); alert("Errore nel verificare lo stato dell'avversario."); heroYesBtn.disabled = false; heroNoBtn.disabled = false; heroWaitMessage.style.display = 'none'; });
+        }
+        console.log("Aggiungo listener bottoni eroi...");
+        heroYesBtn.addEventListener('click', () => { console.log("CLICK su Bottone SI Eroi RILEVATO!"); handleHeroChoice(true); });
+        heroNoBtn.addEventListener('click', () => { console.log("CLICK su Bottone NO Eroi RILEVATO!"); handleHeroChoice(false); });
+
+         // --- Funzione per Generare e Scaricare PDF ---
+         function generateAndDownloadPDF() {
+            console.log("Tentativo generazione PDF...");
+            if (typeof jsPDF === 'undefined') { console.error("Libreria jsPDF non caricata!"); alert("Errore: Impossibile generare il PDF (libreria mancante)."); return; }
+            if (!localGameState || !localGameState.player1 || !localGameState.player2 || !roomId) { console.error("Stato partita locale non valido per generare PDF."); alert("Errore: Dati partita incompleti per generare il PDF."); return; }
+
+            try {
+                const { jsPDF } = window.jspdf; const doc = new jsPDF();
+                const getNationName = (id) => allNations.find(n => n.id === id)?.name || `ID ${id}`;
+                const getHeroText = (choice) => (choice === true ? 'Si' : (choice === false ? 'No' : 'N/D'));
+                let yPos = 15; const lineSpacing = 7; const sectionSpacing = 12; const leftMargin = 15; const column2Offset = 110;
+                doc.setFontSize(18); doc.setFont(undefined, 'bold'); doc.text("Riepilogo Selezione Supremacy 1914 ITA", doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' }); yPos += sectionSpacing;
+                doc.setFontSize(10); doc.setFont(undefined, 'normal'); doc.text(`Stanza: ${roomId}`, leftMargin, yPos); const now = new Date(); doc.text(`Data: ${now.toLocaleDateString('it-IT')} ${now.toLocaleTimeString('it-IT')}`, column2Offset, yPos); yPos += sectionSpacing;
+                doc.setLineWidth(0.3); doc.line(leftMargin, yPos - (sectionSpacing / 2), doc.internal.pageSize.getWidth() - leftMargin, yPos - (sectionSpacing / 2));
+                doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.text(`Comando 1: ${localGameState.player1.name || 'N/D'}`, leftMargin, yPos); yPos += lineSpacing * 1.5;
+                doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("Nazioni Selezionate:", leftMargin, yPos); yPos += lineSpacing; doc.setFont(undefined, 'normal');
+                (localGameState.player1.team || []).forEach((id, index) => { doc.text(`${index + 1}. ${getNationName(id)}`, leftMargin + 5, yPos); yPos += lineSpacing; }); if ((localGameState.player1.team || []).length === 0) { doc.text("- Nessuna", leftMargin + 5, yPos); yPos += lineSpacing; }
+                yPos += lineSpacing / 2; doc.setFont(undefined, 'bold'); doc.text(`Eroi Schierati: ${getHeroText(localGameState.player1.heroChoice)}`, leftMargin, yPos); yPos += sectionSpacing * 1.5;
+                doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.text(`Comando 2: ${localGameState.player2.name || 'N/D'}`, leftMargin, yPos); yPos += lineSpacing * 1.5;
+                doc.setFontSize(11); doc.setFont(undefined, 'bold'); doc.text("Nazioni Selezionate:", leftMargin, yPos); yPos += lineSpacing; doc.setFont(undefined, 'normal');
+                (localGameState.player2.team || []).forEach((id, index) => { doc.text(`${index + 1}. ${getNationName(id)}`, leftMargin + 5, yPos); yPos += lineSpacing; }); if ((localGameState.player2.team || []).length === 0) { doc.text("- Nessuna", leftMargin + 5, yPos); yPos += lineSpacing; }
+                yPos += lineSpacing / 2; doc.setFont(undefined, 'bold'); doc.text(`Eroi Schierati: ${getHeroText(localGameState.player2.heroChoice)}`, leftMargin, yPos);
+                const filename = `riepilogo_draft_${roomId}_${localGameState.player1.name}_vs_${localGameState.player2.name}.pdf`;
+                doc.save(filename); console.log("PDF generato:", filename);
+
+                if (thankYouModal) { thankYouModal.style.display = 'flex'; void thankYouModal.offsetWidth; thankYouModal.classList.add('visible'); }
+                else { console.error("Modale non trovata!"); alert("Lo Staff Supremacy 1914 - 2025 ti ringrazia..."); }
+                if(downloadPdfBtn) downloadPdfBtn.style.display = 'none'; if(resetBtn) resetBtn.style.display = 'none';
+
+            } catch (err) { console.error("Errore generazione PDF:", err); alert("Errore creazione PDF."); if(downloadPdfBtn) downloadPdfBtn.disabled = false; }
+        }
+        downloadPdfBtn.addEventListener('click', () => { downloadPdfBtn.disabled = true; generateAndDownloadPDF(); });
+        modalCloseBtn.addEventListener('click', () => { if (thankYouModal) { thankYouModal.classList.remove('visible'); setTimeout(() => { thankYouModal.style.display = 'none'; }, 300); } });
+        thankYouModal.addEventListener('click', (event) => { if (event.target === thankYouModal) { modalCloseBtn.click(); } });
+        // --- FINE FUNZIONE PDF E LISTENER MODALE ---
+
+
+        function getHeroStatusText(choice) { if (choice === true) return "Eroi Schierati"; if (choice === false) return "Nessun Eroe"; return "In attesa..."; }
+        function populateSummary() { document.getElementById('summary-p1-name').textContent = localGameState.player1.name || 'N/D'; document.getElementById('summary-p2-name').textContent = localGameState.player2.name || 'N/D'; const heroTextP1 = getHeroStatusText(localGameState.player1.heroChoice); const heroP1El = document.getElementById('summary-p1-hero'); heroP1El.textContent = heroTextP1; heroP1El.className = `hero-decision ${localGameState.player1.heroChoice === true ? 'yes' : (localGameState.player1.heroChoice === false ? 'no' : '')}`; const heroTextP2 = getHeroStatusText(localGameState.player2.heroChoice); const heroP2El = document.getElementById('summary-p2-hero'); heroP2El.textContent = heroTextP2; heroP2El.className = `hero-decision ${localGameState.player2.heroChoice === true ? 'yes' : (localGameState.player2.heroChoice === false ? 'no' : '')}`; const listP1 = document.getElementById('summary-p1-nations'); listP1.innerHTML = ''; (localGameState.player1.team || []).forEach(id => { const nation = allNations.find(n => n.id === id); const li = document.createElement('li'); li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`; listP1.appendChild(li); }); const listP2 = document.getElementById('summary-p2-nations'); listP2.innerHTML = ''; (localGameState.player2.team || []).forEach(id => { const nation = allNations.find(n => n.id === id); const li = document.createElement('li'); li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`; listP2.appendChild(li); }); }
+
+        function updateUI() {
+            player1El.querySelector('h2').textContent = localGameState.player1?.name ? `Comando 1: ${localGameState.player1.name}` : "Comando 1 (Attendere)";
+            player2El.querySelector('h2').textContent = localGameState.player2?.name ? `Comando 2: ${localGameState.player2.name}` : "Comando 2 (Attendere)";
+            player1El.classList.toggle('active', localGameState.currentPlayer === 1 && localGameState.gamePhase === "draft");
+            player2El.classList.toggle('active', localGameState.currentPlayer === 2 && localGameState.gamePhase === "draft");
+
+            renderTeams();
+            updateGamePhaseDisplay();
+            renderNations();
+
+            const currentPhase = localGameState.gamePhase;
+            nationsContainer.style.display = (currentPhase === 'draft') ? 'block' : 'none';
+            heroSelectionSection.style.display = (currentPhase === 'hero_selection') ? 'block' : 'none';
+            summarySection.style.display = (currentPhase === 'summary') ? 'block' : 'none';
+
+            if (currentPhase === 'hero_selection') {
+                const myChoice = localGameState[`player${playerRole}`]?.heroChoice;
+                const opponentRole = playerRole === 1 ? 2 : 1;
+                const opponentChoice = localGameState[`player${opponentRole}`]?.heroChoice;
+                const shouldBeDisabled = !(myChoice === null || typeof myChoice === 'undefined');
+                //console.log(`UI Hero: Setting buttons disabled = ${shouldBeDisabled}`);
+                heroYesBtn.disabled = shouldBeDisabled; heroNoBtn.disabled = shouldBeDisabled;
+                heroYesBtn.classList.toggle('selected', myChoice === true);
+                heroNoBtn.classList.toggle('selected', myChoice === false);
+                heroWaitMessage.style.display = (shouldBeDisabled && (opponentChoice === null || typeof opponentChoice === 'undefined')) ? 'block' : 'none';
+                heroChoiceButtons.style.display = 'block';
+            } else {
+                 heroChoiceButtons.style.display = 'none'; heroWaitMessage.style.display = 'none';
+                 heroYesBtn.classList.remove('selected'); heroNoBtn.classList.remove('selected');
+            }
+
+            if (currentPhase === 'summary') {
+                 populateSummary();
+                 downloadPdfBtn.style.display = 'inline-block';
+                 downloadPdfBtn.disabled = false; // Riabilita se era stato disabilitato
+                 // Nascondi modale se per caso era aperta
+                 if (thankYouModal && thankYouModal.classList.contains('visible')) {
+                     thankYouModal.classList.remove('visible');
+                     setTimeout(() => { thankYouModal.style.display = 'none'; }, 300);
+                 }
+            } else {
+                 downloadPdfBtn.style.display = 'none';
+            }
+
+            resetBtn.disabled = !roomId; copyBtn.disabled = !roomId;
+            resetBtn.style.display = (currentPhase === 'summary') ? 'none' : 'inline-block';
+        }
+
+        function renderTeams() { const renderList = (teamEl, teamData, countEl) => { teamEl.innerHTML = ''; const currentTeam = teamData || []; if (currentTeam.length > 0) { currentTeam.forEach(nationId => { const nation = allNations.find(n => n.id === nationId); if (nation) { const nationEl = document.createElement('span'); nationEl.className = 'team-nation'; nationEl.innerHTML = `<img class="team-flag" src="https://flagcdn.com/w40/${nation.code}.png" alt="${nation.name}" title="${nation.name} - ${nation.description} (${nation.bonus})"><span style="margin-left: 5px;">${nation.name}</span>`; teamEl.appendChild(nationEl); } else { console.warn("ID nazione non trovato:", nationId); } }); countEl.textContent = currentTeam.length; } else { countEl.textContent = 0; } }; renderList(p1TeamEl, localGameState.player1?.team, p1CountEl); renderList(p2TeamEl, localGameState.player2?.team, p2CountEl); }
+        function renderNations() { nationsListEl.innerHTML = ''; const p1Team = localGameState.player1?.team || []; const p2Team = localGameState.player2?.team || []; const selectedIds = new Set([...p1Team, ...p2Team]); const canSelect = localGameState.gamePhase === "draft" && localGameState.currentPlayer === playerRole; allNations.forEach(nation => { const isSelected = selectedIds.has(nation.id); const nationCard = document.createElement('div'); nationCard.className = 'nation-card'; nationCard.dataset.nationId = nation.id; const tooltipHtml = `<div class="nation-tooltip"><strong>${nation.name}</strong><br>Bonus: ${nation.bonus || 'N/D'}<br><i>${nation.description || ''}</i></div>`; nationCard.innerHTML = `<img class="flag" src="https://flagcdn.com/w80/${nation.code}.png" alt="${nation.name}" title="${nation.name}"><div class="name">${nation.name}</div>${tooltipHtml}`; nationCard.onclick = null; nationCard.onmouseover = null; nationCard.onmouseout = null; const tooltipElement = nationCard.querySelector('.nation-tooltip'); if (isSelected) { nationCard.classList.add('disabled'); } else { nationCard.onmouseover = () => { if (tooltipElement) tooltipElement.style.display = 'block'; }; nationCard.onmouseout = () => { if (tooltipElement) tooltipElement.style.display = 'none'; }; if (canSelect) { nationCard.classList.add('available'); nationCard.onclick = () => selectNationWithAnimation(nationCard, nation); } } nationsListEl.appendChild(nationCard); }); }
+        function updateGamePhaseDisplay() { const phase = localGameState.gamePhase; let mainTextContent = "Attendere ordini..."; gamePhaseEl.style.color = '#4E3E2D'; let firstChild = gamePhaseEl.firstChild; while(firstChild && firstChild.nodeType !== Node.ELEMENT_NODE && firstChild.id !== 'hero-status-p1' && firstChild.id !== 'hero-status-p2') { gamePhaseEl.removeChild(firstChild); firstChild = gamePhaseEl.firstChild; } if (firstChild && (firstChild.tagName === 'SPAN' || firstChild.nodeType === Node.TEXT_NODE || firstChild.tagName === 'SMALL' || firstChild.tagName === 'BR')) { gamePhaseEl.removeChild(firstChild); } heroStatusP1.style.display = 'none'; heroStatusP1.textContent = ''; heroStatusP2.style.display = 'none'; heroStatusP2.textContent = ''; switch (phase) { case "waiting": const wp1Name = localGameState.player1?.name; const wp2Name = localGameState.player2?.name; if (wp1Name && !wp2Name) { mainTextContent = `Attendere Comando 2... <br><small>Inviare collegamento stanza!</small>`; } else if (!wp1Name && wp2Name) { mainTextContent = `Attendere Comando 1...`; } else if (!wp1Name && !wp2Name) { mainTextContent = `Attendere Comandanti...`; } else { mainTextContent = "Quartier Generale pronto. Attendere inizio mobilitazione..."; } break; case "draft": const dp1Name = localGameState.player1?.name; const dp2Name = localGameState.player2?.name; const dTurnNumber = localGameState.currentPlayer; const dCurrentTurnPlayerName = dTurnNumber === 1 ? dp1Name : dp2Name; if (!dCurrentTurnPlayerName) { mainTextContent = "Attendere..."; break; } if (dTurnNumber === playerRole) { mainTextContent = `<span style="color: #8B0000; font-weight: bold;">Comando ${dTurnNumber}, Vostro Turno!</span> Selezionare nazione.`; } else { mainTextContent = `Attendere Comando ${dTurnNumber} (${dCurrentTurnPlayerName})...`; } break; case "completed": mainTextContent = "Selezione nazioni completata. Preparazione fase Eroi..."; break; case "hero_selection": mainTextContent = "Decisione Schieramento Eroi"; heroStatusP1.textContent = `Comando 1: ${getHeroStatusText(localGameState.player1?.heroChoice)}`; heroStatusP2.textContent = `Comando 2: ${getHeroStatusText(localGameState.player2?.heroChoice)}`; heroStatusP1.style.display = 'block'; heroStatusP2.style.display = 'block'; break; case "summary": mainTextContent = "Riepilogo Finale Selezione"; gamePhaseEl.style.color = '#006400'; break; default: mainTextContent = `Stato Sconosciuto: ${phase}`; gamePhaseEl.style.color = 'red'; } gamePhaseEl.insertAdjacentHTML('afterbegin', mainTextContent); }
+        copyBtn.addEventListener('click', () => { if (!roomId) { alert("Nessuna stanza attiva."); return; } const cleanUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`; const inviteUrl = `${cleanUrl}?room=${roomId}`; navigator.clipboard.writeText(inviteUrl).then(() => { alert(`Collegamento Stanza Strategica copiato!\n${inviteUrl}`); }, (err) => { console.error('Errore copia link:', err); prompt("Copia manuale:", inviteUrl); }); });
+        resetBtn.addEventListener('click', () => { if (!roomId || !playerRole) { return; } if (confirm("Confermare la ritirata dalla Stanza Strategica?")) { if (roomRef) { roomRef.off("value"); roomRef = null; } if (!database) { console.error("DB Error"); return; } const playerPath = `/rooms/${roomId}/player${playerRole}`; console.log("Ritirata da:", playerPath); database.ref(playerPath).remove().then(() => { console.log("Ritirata confermata."); handleGameEndCleanup(); }).catch(error => { console.error("Errore Firebase Remove (resetBtn):", error); alert("Errore durante la ritirata: " + error.message); handleGameEndCleanup(); }); } });
+        function handleGameEndCleanup() { console.log("Cleanup e ritorno a login."); if (roomRef) { roomRef.off("value"); roomRef = null; } clearInterval(timerInterval); timerInterval = null; localGameState = {}; playerRole = null; playerName = ""; roomId = ""; gameContainer.style.display = 'none'; loginContainer.style.display = 'block'; playerNameInput.value = ''; roomIdInput.value = ''; joinBtn.disabled = false; displayRoomId.textContent = ''; displayPlayerName.textContent = ''; displayPlayerRole.textContent = ''; p1TeamEl.innerHTML = ''; p2TeamEl.innerHTML = ''; p1CountEl.textContent = '0'; p2CountEl.textContent = '0'; nationsListEl.innerHTML = ''; gamePhaseEl.innerHTML = 'Attendere ordini...<div class="hero-status" id="hero-status-p1" style="display: none;"></div><div class="hero-status" id="hero-status-p2" style="display: none;"></div>'; timerEl.textContent = ''; if (window.history.replaceState) { const cleanUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`; try { window.history.replaceState({ path: cleanUrl }, '', cleanUrl); } catch (e) { console.warn("URL non pulito:", e); } } }
+        try { const urlParams = new URLSearchParams(window.location.search); const roomParam = urlParams.get('room'); if (roomParam) { const sanitizedRoomId = roomParam.trim().toUpperCase(); if (sanitizedRoomId.length > 0 && sanitizedRoomId.length < 10) { roomIdInput.value = sanitizedRoomId; console.log(`ID Stanza precompilato: ${sanitizedRoomId}`); } else { console.warn(`ID Stanza URL non valido: "${roomParam}"`); } } } catch (e) { console.error("Errore parametri URL:", e); } if (!database) { console.error("DB NON PRONTO ALL'AVVIO."); loginContainer.innerHTML = "<p style='color:red'>Errore critico: database non disponibile.</p>"; }
+
+    </script>
+
+    <!-- Riferimento Regole Sicurezza (SENZA /draft_history) -->
+    <!--
+    {
+      "rules": { /* ... Regole semplificate precedenti ... */ }
+    }
+    -->
+</body>
+</html>
