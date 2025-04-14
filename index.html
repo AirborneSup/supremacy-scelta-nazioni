@@ -26,7 +26,7 @@
             <div class="room-info">
                 Stanza: <strong id="display-room-id"></strong> |
                 Ufficiale: <strong id="display-player-name"></strong> |
-                Designazione: <strong id="display-player-role"></strong>
+                Designazione: <strong id="display-player-role"></strong> <!-- Modificato qui -->
                 <button id="copy-btn" title="Copia Collegamento Stanza"><i class="fa-solid fa-link"></i></button>
             </div>
 
@@ -44,12 +44,14 @@
 
             <div class="players-container">
                 <div class="player" id="player1">
-                    <h2>Comando 1</h2>
+                    <!-- MODIFICA QUI -->
+                    <h2>Generale 1</h2>
                     <div>Nazioni mobilitate: <span id="p1-count">0</span>/5</div>
                     <div class="team-list" id="p1-team"></div>
                 </div>
                 <div class="player" id="player2">
-                    <h2>Comando 2</h2>
+                    <!-- MODIFICA QUI -->
+                    <h2>Generale 2</h2>
                     <div>Nazioni mobilitate: <span id="p2-count">0</span>/5</div>
                     <div class="team-list" id="p2-team"></div>
                 </div>
@@ -74,13 +76,15 @@
                 <h3>Riepilogo Finale Selezione</h3>
                 <div class="summary-details">
                     <div class="summary-player" id="summary-p1">
-                        <h4>Comando 1: <span id="summary-p1-name"></span></h4>
+                        <!-- Modificato qui (il testo verrà aggiornato da JS) -->
+                        <h4>Generale 1: <span id="summary-p1-name"></span></h4>
                         <strong>Nazioni:</strong>
                         <ul id="summary-p1-nations"></ul>
                         <strong>Eroi:</strong> <span class="hero-decision" id="summary-p1-hero"></span>
                     </div>
                     <div class="summary-player" id="summary-p2">
-                         <h4>Comando 2: <span id="summary-p2-name"></span></h4>
+                         <!-- Modificato qui (il testo verrà aggiornato da JS) -->
+                         <h4>Generale 2: <span id="summary-p2-name"></span></h4>
                         <strong>Nazioni:</strong>
                         <ul id="summary-p2-nations"></ul>
                         <strong>Eroi:</strong> <span class="hero-decision" id="summary-p2-hero"></span>
@@ -113,7 +117,9 @@
         let database;
         try { if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); console.log("Firebase inizializzato."); } else { firebase.app(); console.log("Firebase già inizializzato."); } database = firebase.database(); } catch (e) { console.error("ERRORE INIT FIREBASE:", e); alert("Errore Inizializzazione Firebase."); document.body.innerHTML = '<h1 style="color:red; text-align:center;">Errore Critico: Inizializzazione Firebase fallita.</h1>'; }
         const { jsPDF } = window.jspdf;
-        const allNations = [ { id: 1, name: "Marocco", code: "ma", bonus: "Posizione strategica", description: "Crocevia tra Africa ed Europa" }, { id: 2, name: "Spagna", code: "es", bonus: "Esplorazione +10%", description: "Terra di conquistadores" }, { id: 3, name: "Francia", code: "fr", bonus: "Diplomazia +15%", description: "Terra di rivoluzioni e vino" }, { id: 4, name: "Gran Bretagna", code: "gb", bonus: "Commercio +15%", description: "Impero marittimo storico" }, { id: 5, name: "Germania", code: "de", bonus: "Produzione +20%", description: "Potenza industriale europea" }, { id: 6, name: "Italia", code: "it", bonus: "Cultura +10%", description: "Patria dell'arte e della cucina" }, { id: 7, name: "Austria", code: "at", bonus: "Musica +10%", description: "Cuore dell'Europa centrale" }, { id: 8, name: "Turchia", code: "tr", bonus: "Posizione +15%", description: "Crocevia tra continenti" }, { id: 9, name: "Russia", code: "ru", bonus: "Territorio +25%", description: "Vasta nazione euroasiatica" }, { id: 10, name: "Svezia", code: "se", bonus: "Innovazione +10%", description: "Terra di tecnologia e natura" } ];
+        // --- MODIFICA QUI L'ARRAY DELLE NAZIONI ---
+        const allNations = [ { id: 1, name: "Marocco", code: "ma", bonus: "Posizione strategica", description: "Crocevia tra Africa ed Europa" }, { id: 2, name: "Spagna", code: "es", bonus: "Esplorazione +10%", description: "Terra di conquistadores" }, { id: 3, name: "Francia", code: "fr", bonus: "Diplomazia +15%", description: "Terra di rivoluzioni e vino" }, { id: 4, name: "Gran Bretagna", code: "gb", bonus: "Commercio +15%", description: "Impero marittimo storico" }, { id: 5, name: "Germania", code: "de", bonus: "Produzione +20%", description: "Potenza industriale europea" }, { id: 6, name: "Italia", code: "it", bonus: "Cultura +10%", description: "Patria dell'arte e della cucina" }, { id: 7, name: "Austria", code: "at", bonus: "Musica +10%", description: "Cuore dell'Europa centrale" }, { id: 8, name: "Impero Ottomano", code: "tr", bonus: "Posizione +15%", description: "Crocevia tra continenti" }, // <<< NOME CAMBIATO QUI
+                               { id: 9, name: "Russia", code: "ru", bonus: "Territorio +25%", description: "Vasta nazione euroasiatica" }, { id: 10, name: "Svezia", code: "se", bonus: "Innovazione +10%", description: "Terra di tecnologia e natura" } ];
         let localGameState = {}; let playerRole = null; let playerName = ""; let roomId = ""; let timerInterval = null; let roomRef = null;
         let turnStartTime = 0; let timerDuration = 3600000;
         let audioUnlocked = false;
@@ -156,9 +162,20 @@
         // --- Funzioni di Gioco ---
         function generateRoomId() { return Math.random().toString(36).substring(2, 6).toUpperCase(); }
         joinBtn.addEventListener('click', () => { /* Rimosso sblocco audio da qui */ playSound('click'); playerName = playerNameInput.value.trim(); let pRI = roomIdInput.value.trim().toUpperCase(); if (!playerName) { alert("Inserire nome in codice."); playSound('error'); return; } if (!database) { alert("Errore Database."); playSound('error'); return; } joinBtn.disabled = true; if (!pRI) { roomId = generateRoomId(); playerRole = 1; initializeGame(); } else { roomId = pRI; joinRoom(); } });
-        function joinRoom() { if (!database) { joinBtn.disabled=false; return; } const cRR = database.ref(`rooms/${roomId}`); cRR.once('value').then(s => { if (s.exists()) { const rD=s.val()||{}; const p1D=rD.player1||{}; const p2D=rD.player2||{}; const p1E=!!p1D.name; const p2E=!!p2D.name; if (p1E&&p1D.name===playerName){alert("Riconnesso Comando 1."); playSound('turn'); playerRole=1; initializeGameView(); listenToRoomChanges(); return;} if (p2E&&p2D.name===playerName){alert("Riconnesso Comando 2."); playSound('turn'); playerRole=2; initializeGameView(); listenToRoomChanges(); return;} if(p1E&&p2E){alert("Stanza piena!"); playSound('error'); resetLoginUI(); return;} playerRole=p1E?2:1; initializeGame();} else {alert("Stanza non trovata!"); playSound('error'); resetLoginUI();} }).catch(e => {alert("Errore connessione: "+e.message); playSound('error'); resetLoginUI();}); }
+        function joinRoom() { if (!database) { joinBtn.disabled=false; return; } const cRR = database.ref(`rooms/${roomId}`); cRR.once('value').then(s => { if (s.exists()) { const rD=s.val()||{}; const p1D=rD.player1||{}; const p2D=rD.player2||{}; const p1E=!!p1D.name; const p2E=!!p2D.name; if (p1E&&p1D.name===playerName){alert("Riconnesso Generale 1."); playSound('turn'); playerRole=1; initializeGameView(); listenToRoomChanges(); return;} if (p2E&&p2D.name===playerName){alert("Riconnesso Generale 2."); playSound('turn'); playerRole=2; initializeGameView(); listenToRoomChanges(); return;} if(p1E&&p2E){alert("Stanza piena!"); playSound('error'); resetLoginUI(); return;} playerRole=p1E?2:1; initializeGame();} else {alert("Stanza non trovata!"); playSound('error'); resetLoginUI();} }).catch(e => {alert("Errore connessione: "+e.message); playSound('error'); resetLoginUI();}); }
         function resetLoginUI() { roomId = ""; if(roomRef) { roomRef.off("value"); roomRef = null;} playerRole = null; joinBtn.disabled = false; roomIdInput.value = ''; loginContainer.style.display = 'block'; gameContainer.style.display = 'none'; }
-        function initializeGameView() { loginContainer.style.display = 'none'; gameContainer.style.display = 'block'; gameContainer.style.opacity = '1'; displayRoomId.textContent = roomId; displayPlayerName.textContent = playerName; displayPlayerRole.textContent = `Comando ${playerRole}`; }
+
+        // --- MODIFICA QUI ---
+        function initializeGameView() {
+            loginContainer.style.display = 'none';
+            gameContainer.style.display = 'block';
+            gameContainer.style.opacity = '1';
+            displayRoomId.textContent = roomId;
+            displayPlayerName.textContent = playerName;
+            // Cambia il testo della designazione
+            displayPlayerRole.textContent = `Generale ${playerRole}`; // <<< MODIFICATO QUI
+        }
+
         function initializeGame() { if (!database) { resetLoginUI(); return; } initializeGameView(); const up={}; up[`/rooms/${roomId}/player${playerRole}/name`]=playerName; up[`/rooms/${roomId}/player${playerRole}/team`]=[]; up[`/rooms/${roomId}/player${playerRole}/heroChoice`]=null; const rBR=database.ref(`/rooms/${roomId}`); rBR.once('value').then(s=>{ const rD=s.val()||{}; if(playerRole===1&&!rD.gamePhase){ up[`/rooms/${roomId}/currentPlayer`]=1; up[`/rooms/${roomId}/gamePhase`]="waiting"; up[`/rooms/${roomId}/timerEnd`]=null; up[`/rooms/${roomId}/player1/heroChoice`]=null; up[`/rooms/${roomId}/player2/heroChoice`]=null;} database.ref().update(up).then(()=>{listenToRoomChanges();}).catch(e=>{alert("Errore creazione stanza: "+e.message); playSound('error'); handleGameEndCleanup();}); }).catch(e=>{alert("Errore verifica stanza: "+e.message); playSound('error'); handleGameEndCleanup();}); }
 
         function listenToRoomChanges() {
@@ -260,20 +277,103 @@
 
 
         // --- Funzione per Generare e Scaricare PDF ---
-        function generateAndDownloadPDF() { console.log("Genero PDF..."); if (typeof jsPDF==='undefined') { alert("Errore PDF."); playSound('error'); return; } if (!localGameState?.player1?.team || !localGameState?.player2?.team || !roomId) { alert("Errore dati PDF."); playSound('error'); return; } try { const { jsPDF } = window.jspdf; const doc = new jsPDF(); const getNationName = (id) => allNations.find(n => n.id === id)?.name || `ID ${id}`; const getHeroText = (c) => (c === true ? 'Si' : (c === false ? 'No' : 'N/D')); let y=15; const ls=7; const ss=12; const lm=15; const co=110; doc.setFontSize(18); doc.setFont(undefined,'bold'); doc.text("Riepilogo Selezione Supremacy 1914 ITA", doc.internal.pageSize.getWidth()/2, y, {align:'center'}); y+=ss; doc.setFontSize(10); doc.setFont(undefined,'normal'); doc.text(`Stanza: ${roomId}`, lm, y); const now=new Date(); doc.text(`Data: ${now.toLocaleDateString('it-IT')} ${now.toLocaleTimeString('it-IT')}`, co, y); y+=ss; doc.setLineWidth(.3); doc.line(lm, y-ss/2, doc.internal.pageSize.getWidth()-lm, y-ss/2); doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.text(`Comando 1: ${localGameState.player1.name||'N/D'}`, lm, y); y+=ls*1.5; doc.setFontSize(11); doc.setFont(undefined,'bold'); doc.text("Nazioni:", lm, y); y+=ls; doc.setFont(undefined,'normal'); (localGameState.player1.team||[]).forEach((id,i)=>{ doc.text(`${i+1}. ${getNationName(id)}`, lm+5, y); y+=ls; }); if (!(localGameState.player1.team||[]).length){ doc.text("- Nessuna", lm+5, y); y+=ls; } y+=ls/2; doc.setFont(undefined,'bold'); doc.text(`Eroi: ${getHeroText(localGameState.player1.heroChoice)}`, lm, y); y+=ss*1.5; doc.setFontSize(14); doc.setFont(undefined,'bold'); doc.text(`Comando 2: ${localGameState.player2.name||'N/D'}`, lm, y); y+=ls*1.5; doc.setFontSize(11); doc.setFont(undefined,'bold'); doc.text("Nazioni:", lm, y); y+=ls; doc.setFont(undefined,'normal'); (localGameState.player2.team||[]).forEach((id,i)=>{ doc.text(`${i+1}. ${getNationName(id)}`, lm+5, y); y+=ls; }); if (!(localGameState.player2.team||[]).length){ doc.text("- Nessuna", lm+5, y); y+=ls; } y+=ls/2; doc.setFont(undefined,'bold'); doc.text(`Eroi: ${getHeroText(localGameState.player2.heroChoice)}`, lm, y); const fn=`Riepilogo_${roomId}.pdf`; doc.save(fn); console.log("PDF generato:", fn); playSound('complete'); if (thankYouModal) { thankYouModal.style.display='flex'; void thankYouModal.offsetWidth; thankYouModal.classList.add('visible'); } else { alert("Lo Staff Supremacy 1914 - 2025 ti ringrazia..."); } if(downloadPdfBtn) downloadPdfBtn.style.display='none'; if(resetBtn) resetBtn.style.display='none'; } catch (err) { console.error("Errore generazione PDF:", err); alert("Errore creazione PDF."); playSound('error'); if(downloadPdfBtn) downloadPdfBtn.disabled=false; } }
+        // --- MODIFICA QUI ---
+        function generateAndDownloadPDF() {
+            console.log("Genero PDF...");
+            if (typeof jsPDF==='undefined') { alert("Errore PDF."); playSound('error'); return; }
+            if (!localGameState?.player1?.team || !localGameState?.player2?.team || !roomId) { alert("Errore dati PDF."); playSound('error'); return; }
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const getNationName = (id) => allNations.find(n => n.id === id)?.name || `ID ${id}`;
+                const getHeroText = (c) => (c === true ? 'Si' : (c === false ? 'No' : 'N/D'));
+                let y=15; const ls=7; const ss=12; const lm=15; const co=110;
+                doc.setFontSize(18); doc.setFont(undefined,'bold'); doc.text("Riepilogo Selezione Supremacy 1914 ITA", doc.internal.pageSize.getWidth()/2, y, {align:'center'});
+                y+=ss;
+                doc.setFontSize(10); doc.setFont(undefined,'normal'); doc.text(`Stanza: ${roomId}`, lm, y);
+                const now=new Date(); doc.text(`Data: ${now.toLocaleDateString('it-IT')} ${now.toLocaleTimeString('it-IT')}`, co, y);
+                y+=ss;
+                doc.setLineWidth(.3); doc.line(lm, y-ss/2, doc.internal.pageSize.getWidth()-lm, y-ss/2);
+                doc.setFontSize(14); doc.setFont(undefined,'bold');
+                doc.text(`Generale 1: ${localGameState.player1.name||'N/D'}`, lm, y); // <<< MODIFICATO QUI
+                y+=ls*1.5;
+                doc.setFontSize(11); doc.setFont(undefined,'bold'); doc.text("Nazioni:", lm, y); y+=ls;
+                doc.setFont(undefined,'normal');
+                (localGameState.player1.team||[]).forEach((id,i)=>{ doc.text(`${i+1}. ${getNationName(id)}`, lm+5, y); y+=ls; });
+                if (!(localGameState.player1.team||[]).length){ doc.text("- Nessuna", lm+5, y); y+=ls; }
+                y+=ls/2;
+                doc.setFont(undefined,'bold'); doc.text(`Eroi: ${getHeroText(localGameState.player1.heroChoice)}`, lm, y);
+                y+=ss*1.5;
+                doc.setFontSize(14); doc.setFont(undefined,'bold');
+                doc.text(`Generale 2: ${localGameState.player2.name||'N/D'}`, lm, y); // <<< MODIFICATO QUI
+                y+=ls*1.5;
+                doc.setFontSize(11); doc.setFont(undefined,'bold'); doc.text("Nazioni:", lm, y); y+=ls;
+                doc.setFont(undefined,'normal');
+                (localGameState.player2.team||[]).forEach((id,i)=>{ doc.text(`${i+1}. ${getNationName(id)}`, lm+5, y); y+=ls; });
+                if (!(localGameState.player2.team||[]).length){ doc.text("- Nessuna", lm+5, y); y+=ls; }
+                y+=ls/2;
+                doc.setFont(undefined,'bold'); doc.text(`Eroi: ${getHeroText(localGameState.player2.heroChoice)}`, lm, y);
+                const fn=`Riepilogo_${roomId}.pdf`; doc.save(fn);
+                console.log("PDF generato:", fn); playSound('complete');
+                if (thankYouModal) { thankYouModal.style.display='flex'; void thankYouModal.offsetWidth; thankYouModal.classList.add('visible'); } else { alert("Lo Staff Supremacy 1914 - 2025 ti ringrazia..."); }
+                if(downloadPdfBtn) downloadPdfBtn.style.display='none';
+                if(resetBtn) resetBtn.style.display='none';
+            } catch (err) {
+                console.error("Errore generazione PDF:", err); alert("Errore creazione PDF."); playSound('error');
+                if(downloadPdfBtn) downloadPdfBtn.disabled=false;
+            }
+        }
         if(downloadPdfBtn) { downloadPdfBtn.addEventListener('click', () => { playSound('click'); downloadPdfBtn.disabled = true; generateAndDownloadPDF(); }); } else { console.error("Bottone PDF non trovato");}
         if(modalCloseBtn) { modalCloseBtn.addEventListener('click', () => { playSound('click'); if (thankYouModal) { thankYouModal.classList.remove('visible'); setTimeout(() => { thankYouModal.style.display = 'none'; }, 300); } }); }
         if(thankYouModal) { thankYouModal.addEventListener('click', (event) => { if (event.target === thankYouModal) { modalCloseBtn.click(); } }); }
 
 
         function getHeroStatusText(choice) { if (choice === true) return "Eroi Schierati"; if (choice === false) return "Nessun Eroe"; return "In attesa..."; }
-        function populateSummary() { document.getElementById('summary-p1-name').textContent = localGameState.player1.name || 'N/D'; document.getElementById('summary-p2-name').textContent = localGameState.player2.name || 'N/D'; const heroTextP1 = getHeroStatusText(localGameState.player1.heroChoice); const heroP1El = document.getElementById('summary-p1-hero'); heroP1El.textContent = heroTextP1; heroP1El.className = `hero-decision ${localGameState.player1.heroChoice === true ? 'yes' : (localGameState.player1.heroChoice === false ? 'no' : '')}`; const heroTextP2 = getHeroStatusText(localGameState.player2.heroChoice); const heroP2El = document.getElementById('summary-p2-hero'); heroP2El.textContent = heroTextP2; heroP2El.className = `hero-decision ${localGameState.player2.heroChoice === true ? 'yes' : (localGameState.player2.heroChoice === false ? 'no' : '')}`; const listP1 = document.getElementById('summary-p1-nations'); listP1.innerHTML = ''; (localGameState.player1.team || []).forEach(id => { const nation = allNations.find(n => n.id === id); const li = document.createElement('li'); li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`; listP1.appendChild(li); }); const listP2 = document.getElementById('summary-p2-nations'); listP2.innerHTML = ''; (localGameState.player2.team || []).forEach(id => { const nation = allNations.find(n => n.id === id); const li = document.createElement('li'); li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`; listP2.appendChild(li); }); }
+
+        // --- MODIFICA QUI ---
+        function populateSummary() {
+            document.getElementById('summary-p1-name').textContent = localGameState.player1.name || 'N/D';
+            document.getElementById('summary-p2-name').textContent = localGameState.player2.name || 'N/D';
+            // Il titolo h4 è già stato modificato nell'HTML, quindi non serve cambiarlo qui.
+            // Aggiorniamo solo lo span col nome.
+
+            const heroTextP1 = getHeroStatusText(localGameState.player1.heroChoice);
+            const heroP1El = document.getElementById('summary-p1-hero');
+            heroP1El.textContent = heroTextP1;
+            heroP1El.className = `hero-decision ${localGameState.player1.heroChoice === true ? 'yes' : (localGameState.player1.heroChoice === false ? 'no' : '')}`;
+
+            const heroTextP2 = getHeroStatusText(localGameState.player2.heroChoice);
+            const heroP2El = document.getElementById('summary-p2-hero');
+            heroP2El.textContent = heroTextP2;
+            heroP2El.className = `hero-decision ${localGameState.player2.heroChoice === true ? 'yes' : (localGameState.player2.heroChoice === false ? 'no' : '')}`;
+
+            const listP1 = document.getElementById('summary-p1-nations');
+            listP1.innerHTML = '';
+            (localGameState.player1.team || []).forEach(id => {
+                const nation = allNations.find(n => n.id === id);
+                const li = document.createElement('li');
+                li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`;
+                listP1.appendChild(li);
+            });
+
+            const listP2 = document.getElementById('summary-p2-nations');
+            listP2.innerHTML = '';
+            (localGameState.player2.team || []).forEach(id => {
+                const nation = allNations.find(n => n.id === id);
+                const li = document.createElement('li');
+                li.textContent = nation ? nation.name : `ID Sconosciuto: ${id}`;
+                listP2.appendChild(li);
+            });
+        }
 
         // Update UI (CORRETTO con log e check robusto per abilitazione bottoni)
+        // --- MODIFICA QUI ---
         function updateUI() {
              console.log(`updateUI chiamata. Fase attuale (localGameState): ${localGameState.gamePhase}`); // LOG FASE IN updateUI
-             player1El.querySelector('h2').textContent = localGameState.player1?.name ? `Comando 1: ${localGameState.player1.name}` : "Comando 1 (Attendere)";
-             player2El.querySelector('h2').textContent = localGameState.player2?.name ? `Comando 2: ${localGameState.player2.name}` : "Comando 2 (Attendere)";
+             // Aggiorna i titoli dei giocatori
+             player1El.querySelector('h2').textContent = localGameState.player1?.name ? `Generale 1: ${localGameState.player1.name}` : "Generale 1 (Attendere)"; // <<< MODIFICATO QUI
+             player2El.querySelector('h2').textContent = localGameState.player2?.name ? `Generale 2: ${localGameState.player2.name}` : "Generale 2 (Attendere)"; // <<< MODIFICATO QUI
+
              player1El.classList.toggle('active', localGameState.currentPlayer === 1 && localGameState.gamePhase === "draft");
              player2El.classList.toggle('active', localGameState.currentPlayer === 2 && localGameState.gamePhase === "draft");
 
@@ -339,8 +439,77 @@
         function renderTeams() { const renderList = (teamEl, teamData, countEl) => { teamEl.innerHTML = ''; const currentTeam = teamData || []; if (currentTeam.length > 0) { currentTeam.forEach(nationId => { const nation = allNations.find(n => n.id === nationId); if (nation) { const nationEl = document.createElement('span'); nationEl.className = 'team-nation'; nationEl.innerHTML = `<img class="team-flag" src="https://flagcdn.com/w40/${nation.code}.png" alt="${nation.name}" title="${nation.name} - ${nation.description} (${nation.bonus})"><span style="margin-left: 5px;">${nation.name}</span>`; teamEl.appendChild(nationEl); } else { console.warn("ID nazione non trovato:", nationId); } }); countEl.textContent = currentTeam.length; } else { countEl.textContent = 0; } }; renderList(p1TeamEl, localGameState.player1?.team, p1CountEl); renderList(p2TeamEl, localGameState.player2?.team, p2CountEl); }
         // Render Nations (invariata - usa wrapper)
         function renderNations() { nationsListEl.innerHTML = ''; const p1Team = localGameState.player1?.team || []; const p2Team = localGameState.player2?.team || []; const selectedIds = new Set([...p1Team, ...p2Team]); const canSelect = localGameState.gamePhase === "draft" && localGameState.currentPlayer === playerRole; allNations.forEach(nation => { const isSelected = selectedIds.has(nation.id); const nationCard = document.createElement('div'); nationCard.className = 'nation-card'; nationCard.dataset.nationId = nation.id; const tooltipHtml = `<div class="nation-tooltip"><strong>${nation.name}</strong><br>Bonus: ${nation.bonus || 'N/D'}<br><i>${nation.description || ''}</i></div>`; nationCard.innerHTML = `<img class="flag" src="https://flagcdn.com/w80/${nation.code}.png" alt="${nation.name}" title="${nation.name}"><div class="name">${nation.name}</div>${tooltipHtml}`; nationCard.onclick = null; nationCard.onmouseover = null; nationCard.onmouseout = null; const tooltipElement = nationCard.querySelector('.nation-tooltip'); if (isSelected) { nationCard.classList.add('disabled'); } else { nationCard.onmouseover = () => { if (tooltipElement) tooltipElement.style.display = 'block'; }; nationCard.onmouseout = () => { if (tooltipElement) tooltipElement.style.display = 'none'; }; if (canSelect) { nationCard.classList.add('available'); nationCard.onclick = () => selectNationWithAnimation(nationCard, nation); } } nationsListEl.appendChild(nationCard); }); }
+
         // Update Game Phase Display (CORRETTO)
-        function updateGamePhaseDisplay() { const phase = localGameState.gamePhase; let mainTextContent = "Attendere ordini..."; gamePhaseEl.style.color = '#4E3E2D'; let firstChild = gamePhaseEl.firstChild; while(firstChild && firstChild.nodeType !== Node.ELEMENT_NODE && firstChild.id !== 'hero-status-p1' && firstChild.id !== 'hero-status-p2') { gamePhaseEl.removeChild(firstChild); firstChild = gamePhaseEl.firstChild; } if (firstChild && (firstChild.tagName === 'SPAN' || firstChild.nodeType === Node.TEXT_NODE || firstChild.tagName === 'SMALL' || firstChild.tagName === 'BR')) { gamePhaseEl.removeChild(firstChild); } heroStatusP1.style.display = 'none'; heroStatusP1.textContent = ''; heroStatusP2.style.display = 'none'; heroStatusP2.textContent = ''; switch (phase) { case "waiting": const wp1Name = localGameState.player1?.name; const wp2Name = localGameState.player2?.name; if (wp1Name && !wp2Name) { mainTextContent = `Attendere Comando 2... <br><small>Inviare collegamento stanza!</small>`; } else if (!wp1Name && wp2Name) { mainTextContent = `Attendere Comando 1...`; } else if (!wp1Name && !wp2Name) { mainTextContent = `Attendere Comandanti...`; } else { mainTextContent = "Quartier Generale pronto. Attendere inizio mobilitazione..."; } break; case "draft": const dp1Name = localGameState.player1?.name; const dp2Name = localGameState.player2?.name; const dTurnNumber = localGameState.currentPlayer; const dCurrentTurnPlayerName = dTurnNumber === 1 ? dp1Name : dp2Name; if (!dCurrentTurnPlayerName) { mainTextContent = "Attendere..."; break; } if (dTurnNumber === playerRole) { mainTextContent = `<span style="color: #8B0000; font-weight: bold;">Comando ${dTurnNumber}, Vostro Turno!</span> Selezionare nazione.`; } else { mainTextContent = `Attendere Comando ${dTurnNumber} (${dCurrentTurnPlayerName})...`; } break; case "completed": mainTextContent = "Selezione nazioni completata. Preparazione fase Eroi..."; break; case "hero_selection": mainTextContent = "Decisione Schieramento Eroi"; heroStatusP1.textContent = `Comando 1: ${getHeroStatusText(localGameState.player1?.heroChoice)}`; heroStatusP2.textContent = `Comando 2: ${getHeroStatusText(localGameState.player2?.heroChoice)}`; heroStatusP1.style.display = 'block'; heroStatusP2.style.display = 'block'; break; case "summary": mainTextContent = "Riepilogo Finale Selezione"; gamePhaseEl.style.color = '#006400'; break; default: mainTextContent = `Stato Sconosciuto: ${phase}`; gamePhaseEl.style.color = 'red'; } gamePhaseEl.insertAdjacentHTML('afterbegin', mainTextContent); }
+        // --- MODIFICA QUI ---
+        function updateGamePhaseDisplay() {
+            const phase = localGameState.gamePhase;
+            let mainTextContent = "Attendere ordini...";
+            gamePhaseEl.style.color = '#4E3E2D';
+            // Rimuove vecchio testo principale, mantenendo gli status degli eroi
+            let firstChild = gamePhaseEl.firstChild;
+            while(firstChild && firstChild.nodeType !== Node.ELEMENT_NODE && firstChild.id !== 'hero-status-p1' && firstChild.id !== 'hero-status-p2') {
+                 gamePhaseEl.removeChild(firstChild);
+                 firstChild = gamePhaseEl.firstChild;
+            }
+            // Rimuove span/small/br residui se presenti
+            if (firstChild && (firstChild.tagName === 'SPAN' || firstChild.nodeType === Node.TEXT_NODE || firstChild.tagName === 'SMALL' || firstChild.tagName === 'BR')) {
+                 gamePhaseEl.removeChild(firstChild);
+            }
+
+            heroStatusP1.style.display = 'none'; heroStatusP1.textContent = '';
+            heroStatusP2.style.display = 'none'; heroStatusP2.textContent = '';
+
+            switch (phase) {
+                case "waiting":
+                    const wp1Name = localGameState.player1?.name;
+                    const wp2Name = localGameState.player2?.name;
+                    if (wp1Name && !wp2Name) {
+                        mainTextContent = `Attendere Generale 2... <br><small>Inviare collegamento stanza!</small>`; // <<< MODIFICATO QUI
+                    } else if (!wp1Name && wp2Name) {
+                        mainTextContent = `Attendere Generale 1...`; // <<< MODIFICATO QUI
+                    } else if (!wp1Name && !wp2Name) {
+                        mainTextContent = `Attendere Generali...`; // <<< MODIFICATO QUI
+                    } else {
+                        mainTextContent = "Quartier Generale pronto. Attendere inizio mobilitazione...";
+                    }
+                    break;
+                case "draft":
+                    const dp1Name = localGameState.player1?.name;
+                    const dp2Name = localGameState.player2?.name;
+                    const dTurnNumber = localGameState.currentPlayer;
+                    const dCurrentTurnPlayerName = dTurnNumber === 1 ? dp1Name : dp2Name;
+                    if (!dCurrentTurnPlayerName) {
+                        mainTextContent = "Attendere...";
+                        break;
+                    }
+                    if (dTurnNumber === playerRole) {
+                        mainTextContent = `<span style="color: #8B0000; font-weight: bold;">Generale ${dTurnNumber}, Vostro Turno!</span> Selezionare nazione.`; // <<< MODIFICATO QUI
+                    } else {
+                        mainTextContent = `Attendere Generale ${dTurnNumber} (${dCurrentTurnPlayerName})...`; // <<< MODIFICATO QUI
+                    }
+                    break;
+                case "completed":
+                    mainTextContent = "Selezione nazioni completata. Preparazione fase Eroi...";
+                    break;
+                case "hero_selection":
+                    mainTextContent = "Decisione Schieramento Eroi";
+                    heroStatusP1.textContent = `Generale 1: ${getHeroStatusText(localGameState.player1?.heroChoice)}`; // <<< MODIFICATO QUI
+                    heroStatusP2.textContent = `Generale 2: ${getHeroStatusText(localGameState.player2?.heroChoice)}`; // <<< MODIFICATO QUI
+                    heroStatusP1.style.display = 'block';
+                    heroStatusP2.style.display = 'block';
+                    break;
+                case "summary":
+                    mainTextContent = "Riepilogo Finale Selezione";
+                    gamePhaseEl.style.color = '#006400';
+                    break;
+                default:
+                    mainTextContent = `Stato Sconosciuto: ${phase}`;
+                    gamePhaseEl.style.color = 'red';
+            }
+            gamePhaseEl.insertAdjacentHTML('afterbegin', mainTextContent); // Inserisce il nuovo testo principale
+        }
+
         // Funzioni accessorie e Init (invariate)
         copyBtn.addEventListener('click', () => { playSound('click'); if (!roomId) { alert("Nessuna stanza attiva."); playSound('error'); return; } const cleanUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`; const inviteUrl = `${cleanUrl}?room=${roomId}`; navigator.clipboard.writeText(inviteUrl).then(() => { alert(`Collegamento Stanza Strategica copiato!\n${inviteUrl}`); playSound('complete'); }, (err) => { console.error('Errore copia link:', err); prompt("Copia manuale:", inviteUrl); playSound('error'); }); });
         resetBtn.addEventListener('click', () => { playSound('click'); if (!roomId || !playerRole) { return; } if (confirm("Confermare la ritirata dalla Stanza Strategica?")) { playSound('heroYes'); if (roomRef) { roomRef.off("value"); roomRef = null; } if (!database) { console.error("DB Error"); return; } const playerPath = `/rooms/${roomId}/player${playerRole}`; database.ref(playerPath).remove().then(() => { handleGameEndCleanup(); }).catch(error => { alert("Errore durante la ritirata: " + error.message); playSound('error'); handleGameEndCleanup(); }); } else { playSound('heroNo'); } });
