@@ -17,7 +17,8 @@
             --font-serif-display: 'Oswald', Impact, sans-serif;
             --font-sans-serif:'Helvetica Neue', Helvetica, Arial, sans-serif;
             --font-mono:'Courier New', Courier, monospace;
-            --base-border-radius: 3px; --transition-speed:.25s; --shadow-color: rgba(0, 0, 0, .18); --shadow-color-darker: rgba(0, 0, 0, .30);
+            --base-border-radius: 3px; --transition-speed:.2s; /* Velocità transizione */
+            --shadow-color: rgba(0, 0, 0, .18); --shadow-color-darker: rgba(0, 0, 0, .30);
          }
 
          *, ::after, ::before { box-sizing: border-box }
@@ -74,7 +75,6 @@
         .nation-card.available:hover { border-color: var(--color-accent-medium); background: linear-gradient(to bottom, var(--color-card-hover-bg), #F0E8D8); cursor: pointer; transform: translateY(-6px) scale(1.04); box-shadow: 0 10px 20px var(--shadow-color-darker); z-index: 10; }
         .nation-card.available:hover::before { opacity: 1; }
         .nation-card.available:active { transform: translateY(-2px) scale(1.01); box-shadow: 0 4px 10px var(--shadow-color) }
-        .nation-card.selecting { /* Non più usata con conferma */ }
         .nation-card.disabled { opacity: .55; cursor: not-allowed; background: var(--color-disabled-bg); box-shadow: inset 0 2px 4px rgba(0, 0, 0, .1); border-color: var(--color-disabled-border); transform: none !important }
         .nation-card.disabled:hover { transform: none; box-shadow: inset 0 2px 4px rgba(0, 0, 0, .1) }
         .flag { width: 70px; height: auto; aspect-ratio: 8/5; object-fit: cover; border: 1px solid var(--color-container-border); margin-bottom: 10px; display: block; margin-left: auto; margin-right: auto; filter: sepia(10%); border-radius: 3px; box-shadow: 0 1px 2px rgba(0, 0, 0, .1); }
@@ -157,27 +157,18 @@
         .nation-card.provisional {
             border: 3px solid var(--color-accent-dark) !important; /* Sovrascrive il bordo normale/hover */
             box-shadow: 0 5px 15px var(--shadow-color-darker), inset 0 0 5px rgba(139,0,0,0.2);
-            transform: scale(1.03); /* Mantiene lo scale dell'hover o simile */
+            transform: scale(1.03) !important; /* Sovrascrive hover */
             background: linear-gradient(to bottom, var(--color-card-hover-bg), #F0E8D8);
-            cursor: default !important; /* Non cliccabile per riselezionare */
+            cursor: pointer !important; /* Permetti di cliccare per deselezionare/cambiare */
             z-index: 15; /* Sopra le altre card */
         }
-        .nation-card.provisional:hover {
-             /* Mantiene lo stile provisional anche in hover */
-             transform: scale(1.03);
-             box-shadow: 0 5px 15px var(--shadow-color-darker), inset 0 0 5px rgba(139,0,0,0.2);
+         /* Rimuoviamo lo stile hover specifico per .provisional per permettere il click */
+        /*.nation-card.provisional:hover { } */
+        .nation-card.available.provisional {
+            /* Assicurati che il bordo rimanga evidente */
              border-color: var(--color-accent-dark) !important;
-             cursor: default !important;
+             cursor: pointer !important;
         }
-        .nation-card.available.provisional:hover {
-            /* Previene che l'hover di 'available' sovrascriva 'provisional' */
-             transform: scale(1.03);
-             box-shadow: 0 5px 15px var(--shadow-color-darker), inset 0 0 5px rgba(139,0,0,0.2);
-             border-color: var(--color-accent-dark) !important;
-             cursor: default !important;
-             background: linear-gradient(to bottom, var(--color-card-hover-bg), #F0E8D8);
-        }
-
 
     </style>
 </head>
@@ -402,7 +393,7 @@
                 alertErrorConfirmDb: "Errore durante la conferma: {message}",
                 // Nazioni...
                 nationName_1: "Marocco", nationBonus_1: "Posizione strategica", nationDesc_1: "Crocevia tra Africa ed Europa",
-                nationName_2: "Spagna", nationBonus_2: "Esplorazione +10%", nationDesc_2: "Terra di conquistadores",
+                nationName_2: "Spain", nationBonus_2: "Esplorazione +10%", nationDesc_2: "Terra di conquistadores",
                 nationName_3: "Francia", nationBonus_3: "Diplomazia +15%", nationDesc_3: "Terra di rivoluzioni e vino",
                 nationName_4: "Gran Bretagna", nationBonus_4: "Commercio +15%", nationDesc_4: "Impero marittimo storico",
                 nationName_5: "Germania", nationBonus_5: "Produzione +20%", nationDesc_5: "Potenza industriale europea",
@@ -678,11 +669,36 @@
 
                 const showNations = (currentPhase === 'draft'); const showHero = (currentPhase === 'hero_selection'); const showSummary = (currentPhase === 'summary'); if (nationsContainer) nationsContainer.style.display = showNations ? 'block' : 'none'; if (heroSelectionSection) heroSelectionSection.style.display = showHero ? 'block' : 'none'; if (summarySection) summarySection.style.display = showSummary ? 'block' : 'none';
 
-                if (currentPhase === 'hero_selection') { /* ... gestione UI fase eroi ... */ }
-                else { /* ... reset UI fase eroi ... */ }
+                if (currentPhase === 'hero_selection') {
+                    const myChoice = localGameState[`player${playerRole}`]?.heroChoice;
+                    const oppRole = playerRole === 1 ? 2 : 1;
+                    const oppChoice = localGameState[`player${oppRole}`]?.heroChoice;
+                    const iHaveChosen = (myChoice !== null && myChoice !== undefined);
+                    const oppHasChosen = (oppChoice !== null && oppChoice !== undefined);
+                    if (heroYesBtn && heroNoBtn) {
+                        heroYesBtn.disabled = iHaveChosen; heroNoBtn.disabled = iHaveChosen;
+                        heroYesBtn.classList.toggle('selected', myChoice === true);
+                        heroNoBtn.classList.toggle('selected', myChoice === false);
+                    }
+                    if (heroWaitMessage) {
+                        heroWaitMessage.style.display = (iHaveChosen && !oppHasChosen) ? 'block' : 'none';
+                        heroWaitMessage.textContent = t('heroWaitMessage');
+                    }
+                    if (heroChoiceButtons) { heroChoiceButtons.style.display = 'block'; }
+                } else {
+                    if (heroChoiceButtons) heroChoiceButtons.style.display = 'none';
+                    if (heroWaitMessage) heroWaitMessage.style.display = 'none';
+                    if (heroYesBtn) { heroYesBtn.classList.remove('selected'); heroYesBtn.disabled = false; }
+                    if (heroNoBtn) { heroNoBtn.classList.remove('selected'); heroNoBtn.disabled = false; }
+                }
 
-                if (currentPhase === 'summary') { populateSummary(); /* ... gestione UI fase summary ... */ }
-                else { if (downloadPdfBtn) downloadPdfBtn.style.display = 'none'; }
+                if (currentPhase === 'summary') {
+                    populateSummary();
+                    if (downloadPdfBtn) { downloadPdfBtn.style.display = 'inline-block'; downloadPdfBtn.disabled = false; }
+                    if (thankYouModal && thankYouModal.classList.contains('visible')) { if(modalCloseBtn) modalCloseBtn.click(); }
+                } else {
+                    if (downloadPdfBtn) downloadPdfBtn.style.display = 'none';
+                }
 
                 if (resetBtn) { resetBtn.disabled = !roomId; resetBtn.style.display = (currentPhase === 'summary' || (thankYouModal && thankYouModal.classList.contains('visible'))) ? 'none' : 'inline-block'; }
                 if (copyBtn) { copyBtn.disabled = !roomId; copyBtn.title = t('copyLinkButtonTitle'); }
@@ -694,8 +710,6 @@
                     //     // handleSkipTurn(); // Da implementare
                     // }
                     return; } const minutes = Math.floor(timeLeft / 60000); const seconds = Math.floor((timeLeft % 60000) / 1000); if(timerEl) timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; const percentageLeft = Math.max(0, (timeLeft / timerDuration) * 100); if(timerBar) timerBar.style.width = `${percentageLeft}%`; }; updateTimerDisplay(); timerInterval = setInterval(updateTimerDisplay, 1000); }
-            // function selectNationWithAnimation(cardElement, nationData) { /* Non più usata */ }
-            // function selectNation(nationData) { /* Sostituita da handleConfirmPick */ }
 
             function handleProvisionalSelect(nationData) {
                 const logPrefix = `[${playerName} - P${playerRole}]`;
@@ -834,7 +848,8 @@
                      if (isSelected) {
                          nationCard.classList.add('disabled');
                      } else {
-                         nationCard.onmouseover = () => { if (tooltipElement && !isProvisional) tooltipElement.style.display = 'block'; }; // Non mostrare tooltip se è provvisoria
+                         // Mostra tooltip solo se non è la selezione provvisoria
+                         nationCard.onmouseover = () => { if (tooltipElement && !isProvisional) tooltipElement.style.display = 'block'; };
                          nationCard.onmouseout = () => { if (tooltipElement) tooltipElement.style.display = 'none'; };
 
                          if (isMyTurn && canSelectMore) {
@@ -843,10 +858,12 @@
 
                              if (isProvisional) {
                                  nationCard.classList.add('provisional');
-                                 nationCard.classList.remove('available'); // Rimuovi per evitare stili hover conflittuali
+                                 // Non rimuovere 'available' per mantenere gli stili base attivi
+                                 // nationCard.classList.remove('available');
                              }
                          } else {
-                             nationCard.classList.add('disabled');
+                             // Nazione disponibile ma non è il mio turno o squadra piena
+                             nationCard.classList.add('disabled'); // Rendi visivamente non interagibile
                              nationCard.style.cursor = 'not-allowed';
                          }
                      }
@@ -940,3 +957,6 @@
 
 </body>
 </html>
+```
+
+Questo codice dovrebbe ora funzionare come richiesto: la selezione della nazione è un processo in due fasi (click sulla nazione + click su "Conferma Scelta").
