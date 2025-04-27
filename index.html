@@ -138,6 +138,9 @@
             color: var(--color-text-light);
             border: 1px solid #2E6B40;
             text-shadow: 1px 1px 1px rgba(0, 0, 0, .3);
+            padding: 8px 16px !important; /* Forzare padding più piccolo */
+            font-size: 0.9em !important; /* Forzare font più piccolo */
+            margin-top: 10px !important; /* Aggiunge spazio sopra */
         }
         .confirm-btn:hover:not(:disabled) {
             background: linear-gradient(to bottom, #60D888, #4A9B65);
@@ -162,8 +165,6 @@
             cursor: pointer !important; /* Permetti di cliccare per deselezionare/cambiare */
             z-index: 15; /* Sopra le altre card */
         }
-         /* Rimuoviamo lo stile hover specifico per .provisional per permettere il click */
-        /*.nation-card.provisional:hover { } */
         .nation-card.available.provisional {
             /* Assicurati che il bordo rimanga evidente */
              border-color: var(--color-accent-dark) !important;
@@ -189,7 +190,8 @@
             <!-- / SELETTORE LINGUA CON IMMAGINI CDN -->
 
             <h3 data-translate-key="loginTitle">Accesso Ufficiali</h3>
-            <input type="text" id="player-name" data-translate-key="loginPlaceholderName" data-translate-attr="placeholder" placeholder="Nome in codice" required>
+            <!-- MODIFICA PLACEHOLDER E TRADUZIONE -->
+            <input type="text" id="player-name" data-translate-key="loginPlaceholderName" data-translate-attr="placeholder" placeholder="Nome giocatore" required>
             <select id="alliance-select" required disabled>
                 <option value="" disabled selected>-- Caricamento Alleanze... --</option>
             </select>
@@ -219,7 +221,7 @@
                      <div><span data-translate-key="nationsMobilizedLabel">Nazioni mobilitate</span>: <span id="p1-count">0</span>/5</div>
                      <div class="team-list" id="p1-team"></div>
                      <!-- PULSANTE CONFERMA P1 -->
-                     <button class="confirm-btn" id="p1-confirm-btn" style="display: none; margin-top: 10px; padding: 8px 16px; font-size: 0.9em;" data-translate-key="confirmButtonLabel" data-translate-attr="title" data-translate-title-key="confirmButtonTitle" title="Conferma la nazione selezionata e passa il turno">
+                     <button class="confirm-btn" id="p1-confirm-btn" style="display: none;" data-translate-key="confirmButtonLabel" data-translate-attr="title" data-translate-title-key="confirmButtonTitle" title="Conferma la nazione selezionata e passa il turno">
                          <i class="fa-solid fa-check-double"></i> <span data-translate-key="confirmButtonLabel">Conferma Scelta</span>
                      </button>
                      <!-- FINE PULSANTE CONFERMA P1 -->
@@ -230,7 +232,7 @@
                      <div><span data-translate-key="nationsMobilizedLabel">Nazioni mobilitate</span>: <span id="p2-count">0</span>/5</div>
                      <div class="team-list" id="p2-team"></div>
                       <!-- PULSANTE CONFERMA P2 -->
-                     <button class="confirm-btn" id="p2-confirm-btn" style="display: none; margin-top: 10px; padding: 8px 16px; font-size: 0.9em;" data-translate-key="confirmButtonLabel" data-translate-attr="title" data-translate-title-key="confirmButtonTitle" title="Conferma la nazione selezionata e passa il turno">
+                     <button class="confirm-btn" id="p2-confirm-btn" style="display: none;" data-translate-key="confirmButtonLabel" data-translate-attr="title" data-translate-title-key="confirmButtonTitle" title="Conferma la nazione selezionata e passa il turno">
                         <i class="fa-solid fa-check-double"></i> <span data-translate-key="confirmButtonLabel">Conferma Scelta</span>
                      </button>
                      <!-- FINE PULSANTE CONFERMA P2 -->
@@ -298,14 +300,14 @@
         let timerDuration = 3600000; // 1 ORA
         let audioUnlocked = false; let sounds = {};
         let currentLanguage = 'it'; // Default, verrà sovrascritto
-        let provisionalSelection = { playerId: null, nationId: null }; // NUOVO: Traccia selezione provvisoria
+        let provisionalSelection = { playerId: null, nationId: null }; // Traccia selezione provvisoria
 
         // --- OGGETTO TRADUZIONI (i18n) ---
         const translations = {
             it: {
                 appTitle: "Scelta Nazioni Supremacy 1914 ITA",
                 loginTitle: "Accesso Ufficiali",
-                loginPlaceholderName: "Nome in codice",
+                loginPlaceholderName: "Nome giocatore", // MODIFICATO
                 loginAllianceSelectDefault: "-- Seleziona Alleanza --",
                 loginAllianceLoading: "-- Caricamento Alleanze... --",
                 loginPlaceholderRoom: "ID Stanza Strategica (o lasciare vuoto)",
@@ -323,7 +325,7 @@
                 gamePhaseWaitingP1: "Attendere Generale 1...",
                 gamePhaseWaitingGenerals: "Attendere Generali...",
                 gamePhaseHqReady: "Quartier Generale pronto...",
-                gamePhaseYourTurn: "<span style=\"color: var(--color-accent-dark); font-weight: bold;\">Generale {playerNum}, Vostro Turno!</span><br><small style='font-family:var(--font-serif); text-transform:none; font-weight:normal;'>Selezionare nazione e confermare.</small>", // Modificato
+                gamePhaseYourTurn: "<span style=\"color: var(--color-accent-dark); font-weight: bold;\">Generale {playerNum}, Vostro Turno!</span><br><small style='font-family:var(--font-serif); text-transform:none; font-weight:normal;'>Selezionare nazione e confermare.</small>",
                 gamePhaseWaitingOpponent: "Attendere Generale {playerNum} ({playerName})...",
                 gamePhaseDraftComplete: "Selezione completata. Preparo fase Eroi...",
                 gamePhaseHeroSelection: "Decisione Schieramento Eroi",
@@ -361,7 +363,7 @@
                 alertErrorAuthGeneric: "Errore auth ({code}). Impossibile continuare.",
                 alertErrorFirebaseInit: "Errore Init Firebase: {message}",
                 alertErrorAuthNotCompleted: "Autenticazione non completata.",
-                alertErrorMissingName: "Nome in codice mancante.",
+                alertErrorMissingName: "Nome giocatore mancante.", // MODIFICATO
                 alertErrorMissingAlliance: "Selezionare un'alleanza.",
                 alertErrorDbError: "Errore connessione database.",
                 alertErrorServices: "Errore servizi Firebase.",
@@ -386,14 +388,14 @@
                 alertErrorNoRoomToCopy: "Nessuna stanza selezionata per copiare il link.",
                 confirmRetreat: "Confermi la ritirata?",
                 promptCopyManually: "Copia manualmente il link:",
-                // NUOVE/MODIFICATE per Conferma
+                // Per Conferma
                 confirmButtonLabel: "Conferma Scelta",
                 confirmButtonTitle: "Conferma la nazione selezionata e passa il turno",
                 alertErrorConfirmNoSelection: "Nessuna nazione selezionata da confermare.",
                 alertErrorConfirmDb: "Errore durante la conferma: {message}",
                 // Nazioni...
                 nationName_1: "Marocco", nationBonus_1: "Posizione strategica", nationDesc_1: "Crocevia tra Africa ed Europa",
-                nationName_2: "Spain", nationBonus_2: "Esplorazione +10%", nationDesc_2: "Terra di conquistadores",
+                nationName_2: "Spagna", nationBonus_2: "Esplorazione +10%", nationDesc_2: "Terra di conquistadores",
                 nationName_3: "Francia", nationBonus_3: "Diplomazia +15%", nationDesc_3: "Terra di rivoluzioni e vino",
                 nationName_4: "Gran Bretagna", nationBonus_4: "Commercio +15%", nationDesc_4: "Impero marittimo storico",
                 nationName_5: "Germania", nationBonus_5: "Produzione +20%", nationDesc_5: "Potenza industriale europea",
@@ -406,7 +408,7 @@
             en: {
                 appTitle: "Supremacy 1914 Nation Draft ENG",
                 loginTitle: "Officer Login",
-                loginPlaceholderName: "Codename",
+                loginPlaceholderName: "Player Name", // MODIFICATO
                 loginAllianceSelectDefault: "-- Select Alliance --",
                 loginAllianceLoading: "-- Loading Alliances... --",
                 loginPlaceholderRoom: "Strategic Room ID (or leave empty)",
@@ -424,7 +426,7 @@
                 gamePhaseWaitingP1: "Waiting for General 1...",
                 gamePhaseWaitingGenerals: "Waiting for Generals...",
                 gamePhaseHqReady: "Headquarters ready...",
-                gamePhaseYourTurn: "<span style=\"color: var(--color-accent-dark); font-weight: bold;\">General {playerNum}, Your Turn!</span><br><small style='font-family:var(--font-serif); text-transform:none; font-weight:normal;'>Select a nation and confirm.</small>", // Modified
+                gamePhaseYourTurn: "<span style=\"color: var(--color-accent-dark); font-weight: bold;\">General {playerNum}, Your Turn!</span><br><small style='font-family:var(--font-serif); text-transform:none; font-weight:normal;'>Select a nation and confirm.</small>",
                 gamePhaseWaitingOpponent: "Waiting for General {playerNum} ({playerName})...",
                 gamePhaseDraftComplete: "Selection complete. Preparing Hero phase...",
                 gamePhaseHeroSelection: "Hero Deployment Decision",
@@ -462,7 +464,7 @@
                 alertErrorAuthGeneric: "Auth error ({code}). Cannot continue.",
                 alertErrorFirebaseInit: "Firebase Init Error: {message}",
                 alertErrorAuthNotCompleted: "Authentication not complete.",
-                alertErrorMissingName: "Codename missing.",
+                alertErrorMissingName: "Player Name missing.", // MODIFICATO
                 alertErrorMissingAlliance: "Select an alliance.",
                 alertErrorDbError: "Database connection error.",
                 alertErrorServices: "Firebase services error.",
@@ -487,7 +489,7 @@
                 alertErrorNoRoomToCopy: "No room selected to copy link.",
                 confirmRetreat: "Confirm retreat?",
                 promptCopyManually: "Manual copy link:",
-                 // NEW/MODIFIED for Confirm
+                // For Confirm
                 confirmButtonLabel: "Confirm Pick",
                 confirmButtonTitle: "Confirm the selected nation and end turn",
                 alertErrorConfirmNoSelection: "No nation selected to confirm.",
@@ -535,7 +537,7 @@
                 nationsContainer, heroSelectionSection, heroChoiceButtons, heroYesBtn, heroNoBtn,
                 heroWaitMessage, summarySection, timerBarContainer, timerBar, downloadPdfBtn,
                 thankYouModal, modalCloseBtn, authStatusEl, langItBtn, langEnBtn,
-                p1ConfirmBtn, p2ConfirmBtn; // Aggiunti pulsanti conferma
+                p1ConfirmBtn, p2ConfirmBtn; // Pulsanti conferma
 
             // --- Funzioni i18n e Setup Iniziale ---
             function updateStaticTexts() {
@@ -557,7 +559,7 @@
                 });
                 if (allianceSelect && allianceSelect.options.length > 0 && allianceSelect.options[0].value === "") { const currentText = allianceSelect.options[0].textContent; if (currentText === translations.it.loginAllianceLoading || currentText === translations.en.loginAllianceLoading || currentText === translations.it.loginAllianceSelectDefault || currentText === translations.en.loginAllianceSelectDefault) { allianceSelect.options[0].textContent = loadedAlliances.length > 0 ? t('loginAllianceSelectDefault') : t('loginAllianceLoading'); } }
                 if (authStatusEl && !isAuthComplete) { authStatusEl.textContent = t('authStatusInitializing'); }
-                 // Aggiorna anche i pulsanti conferma se visibili (dovrebbe essere gestito in updateUI ma per sicurezza)
+                 // Aggiorna anche i pulsanti conferma se visibili
                 if(p1ConfirmBtn && p1ConfirmBtn.style.display !== 'none') {
                    const titleKey1 = p1ConfirmBtn.dataset.translateTitleKey; if (titleKey1) p1ConfirmBtn.title = t(titleKey1);
                    const textSpan1 = p1ConfirmBtn.querySelector('span[data-translate-key]'); if(textSpan1) { const textKey1 = textSpan1.dataset.translateKey; if(textKey1) textSpan1.textContent = t(textKey1); }
@@ -574,33 +576,26 @@
                  if (translations[lang]) {
                      currentLanguage = lang; document.documentElement.lang = lang.split('-')[0]; localStorage.setItem('preferredLanguage', lang); console.log(`[DEBUG] Lingua globale impostata a: ${currentLanguage}`);
                      updateStaticTexts();
-                     if (langItBtn) { console.log("[DEBUG] Aggiorno classe bottone IT:", lang === 'it'); langItBtn.classList.toggle('active', lang === 'it'); } else { console.warn("[DEBUG] langItBtn non trovato in setLanguage"); }
-                     if (langEnBtn) { console.log("[DEBUG] Aggiorno classe bottone EN:", lang === 'en'); langEnBtn.classList.toggle('active', lang === 'en'); } else { console.warn("[DEBUG] langEnBtn non trovato in setLanguage"); }
-                     if (localGameState && Object.keys(localGameState).length > 0 && gameContainer && gameContainer.style.display !== 'none') { console.log("[DEBUG] Gioco attivo, chiamo updateUI() da setLanguage"); updateUI(); }
+                     if (langItBtn) { langItBtn.classList.toggle('active', lang === 'it'); }
+                     if (langEnBtn) { langEnBtn.classList.toggle('active', lang === 'en'); }
+                     if (localGameState && Object.keys(localGameState).length > 0 && gameContainer && gameContainer.style.display !== 'none') { updateUI(); }
                  } else { console.warn(`[DEBUG] Lingua non supportata: ${lang}`); }
              }
 
             // 1. Rileva lingua
             currentLanguage = detectLanguage();
-            console.log(`[DEBUG] Lingua rilevata: ${currentLanguage}`);
-
-            // 2. Ottieni SUBITO gli elementi per la lingua
+            // 2. Ottieni elementi lingua
             langItBtn = document.getElementById('lang-it');
             langEnBtn = document.getElementById('lang-en');
-            console.log("[DEBUG] Elemento lang-it:", langItBtn ? "Trovato" : "NON TROVATO!");
-            console.log("[DEBUG] Elemento lang-en:", langEnBtn ? "Trovato" : "NON TROVATO!");
-
-            // 3. Imposta la lingua iniziale
+            // 3. Imposta lingua iniziale
             setLanguage(currentLanguage);
-
-            // 4. Ottieni gli ALTRI elementi DOM
+            // 4. Ottieni altri elementi DOM
             console.log("[DEBUG] Ottenimento altri elementi DOM...");
             loginContainer = document.getElementById('login-container'); gameContainer = document.getElementById('game-container'); playerNameInput = document.getElementById('player-name'); roomIdInput = document.getElementById('room-id'); allianceSelect = document.getElementById('alliance-select'); joinBtn = document.getElementById('join-btn'); displayRoomId = document.getElementById('display-room-id'); displayPlayerName = document.getElementById('display-player-name'); displayPlayerRole = document.getElementById('display-player-role'); nationsListEl = document.getElementById('nations-list'); p1TeamEl = document.getElementById('p1-team'); p2TeamEl = document.getElementById('p2-team'); p1CountEl = document.getElementById('p1-count'); p2CountEl = document.getElementById('p2-count'); gamePhaseEl = document.getElementById('game-phase'); timerEl = document.getElementById('timer'); player1El = document.getElementById('player1'); player2El = document.getElementById('player2'); resetBtn = document.getElementById('reset-btn'); copyBtn = document.getElementById('copy-btn'); nationsContainer = document.getElementById('nations-container'); heroSelectionSection = document.getElementById('hero-selection-section'); heroChoiceButtons = document.getElementById('hero-choice-buttons'); heroYesBtn = document.getElementById('hero-yes-btn'); heroNoBtn = document.getElementById('hero-no-btn'); heroWaitMessage = document.getElementById('hero-wait-message'); summarySection = document.getElementById('summary-section'); timerBarContainer = document.getElementById('timer-bar-container'); timerBar = document.getElementById('timer-bar'); downloadPdfBtn = document.getElementById('download-pdf-btn'); thankYouModal = document.getElementById('thank-you-modal'); modalCloseBtn = document.getElementById('modal-close-btn'); authStatusEl = document.getElementById('auth-status');
-            p1ConfirmBtn = document.getElementById('p1-confirm-btn'); // Aggiunto
-            p2ConfirmBtn = document.getElementById('p2-confirm-btn'); // Aggiunto
+            p1ConfirmBtn = document.getElementById('p1-confirm-btn');
+            p2ConfirmBtn = document.getElementById('p2-confirm-btn');
             console.log("[DEBUG] Ottenimento elementi DOM completato.");
-
-            // 5. Applica nuovamente traduzioni statiche
+            // 5. Applica traduzioni statiche iniziali
             updateStaticTexts();
 
             // --- Funzioni Utilità Gioco ---
@@ -622,8 +617,6 @@
                     // --- RESET SELEZIONE PROVVISORIA SE CAMBIA TURNO/FASE ---
                     const currentPlayerChanged = localGameState.currentPlayer !== previousPlayer;
                     const gamePhaseChanged = localGameState.gamePhase !== previousPhase;
-                    // Resetta solo se la selezione provvisoria apparteneva al giocatore che *ha appena perso* il turno,
-                    // o se la fase di gioco è cambiata (es. da draft a hero).
                     if ( ((currentPlayerChanged && previousPlayer === provisionalSelection.playerId) || gamePhaseChanged) && provisionalSelection.nationId !== null) {
                         console.log(`[DEBUG] Turno/Fase cambiati. Reset selezione provvisoria di P${provisionalSelection.playerId}.`);
                         provisionalSelection = { playerId: null, nationId: null };
@@ -652,7 +645,7 @@
                  if (p1ConfirmBtn) {
                      p1ConfirmBtn.style.display = showConfirmP1 ? 'inline-block' : 'none';
                      p1ConfirmBtn.disabled = !showConfirmP1;
-                     // Aggiorna testo/titolo (potrebbe essere fatto da updateStaticTexts ma qui è più mirato)
+                     // Aggiorna testo/titolo
                      const titleKey1 = p1ConfirmBtn.dataset.translateTitleKey; if (titleKey1) p1ConfirmBtn.title = t(titleKey1);
                      const textSpan1 = p1ConfirmBtn.querySelector('span[data-translate-key]'); if(textSpan1) { const textKey1 = textSpan1.dataset.translateKey; if(textKey1) textSpan1.textContent = t(textKey1); }
                  }
@@ -704,11 +697,8 @@
                 if (copyBtn) { copyBtn.disabled = !roomId; copyBtn.title = t('copyLinkButtonTitle'); }
                 console.log("[DEBUG] updateUI() completata.");
             }
-            function startTimer() { clearInterval(timerInterval); if (!localGameState.timerEnd || localGameState.gamePhase !== 'draft') { if(timerEl) timerEl.textContent = ''; if(timerBarContainer) timerBarContainer.style.display = 'none'; return; } if(timerBarContainer) timerBarContainer.style.display = 'block'; const updateTimerDisplay = () => { const now = Date.now(); const endTime = localGameState.timerEnd; const timeLeft = Math.max(0, endTime - now); if (timeLeft === 0) { clearInterval(timerInterval); timerInterval = null; if(timerEl) timerEl.textContent = "00:00"; if(timerBar) timerBar.style.width = '0%'; console.log("Tempo scaduto."); // Implementare skip turno automatico qui?
-                    // if (localGameState.currentPlayer === playerRole) {
-                    //     console.log("Tempo scaduto! Tentativo skip turno (non implementato)");
-                    //     // handleSkipTurn(); // Da implementare
-                    // }
+            function startTimer() { clearInterval(timerInterval); if (!localGameState.timerEnd || localGameState.gamePhase !== 'draft') { if(timerEl) timerEl.textContent = ''; if(timerBarContainer) timerBarContainer.style.display = 'none'; return; } if(timerBarContainer) timerBarContainer.style.display = 'block'; const updateTimerDisplay = () => { const now = Date.now(); const endTime = localGameState.timerEnd; const timeLeft = Math.max(0, endTime - now); if (timeLeft === 0) { clearInterval(timerInterval); timerInterval = null; if(timerEl) timerEl.textContent = "00:00"; if(timerBar) timerBar.style.width = '0%'; console.log("Tempo scaduto.");
+                    // Possibile gestione skip turno qui se necessario
                     return; } const minutes = Math.floor(timeLeft / 60000); const seconds = Math.floor((timeLeft % 60000) / 1000); if(timerEl) timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; const percentageLeft = Math.max(0, (timeLeft / timerDuration) * 100); if(timerBar) timerBar.style.width = `${percentageLeft}%`; }; updateTimerDisplay(); timerInterval = setInterval(updateTimerDisplay, 1000); }
 
             function handleProvisionalSelect(nationData) {
@@ -858,12 +848,11 @@
 
                              if (isProvisional) {
                                  nationCard.classList.add('provisional');
-                                 // Non rimuovere 'available' per mantenere gli stili base attivi
-                                 // nationCard.classList.remove('available');
+                                 // Non rimuovere 'available' per mantenere stili base
                              }
                          } else {
                              // Nazione disponibile ma non è il mio turno o squadra piena
-                             nationCard.classList.add('disabled'); // Rendi visivamente non interagibile
+                             nationCard.classList.add('disabled');
                              nationCard.style.cursor = 'not-allowed';
                          }
                      }
@@ -888,16 +877,16 @@
                  if (playerNameInput) playerNameInput.addEventListener('input', checkLoginInputs); if (allianceSelect) allianceSelect.addEventListener('change', checkLoginInputs); checkLoginInputs();
                  initializeAudio();
                  console.log("[DEBUG] Aggiunta event listeners...");
-                 if (joinBtn && !joinBtn.dataset.listenerAttached) { joinBtn.addEventListener('click', handleJoinClick); joinBtn.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a joinBtn"); }
-                 if (copyBtn && !copyBtn.dataset.listenerAttached) { copyBtn.addEventListener('click', handleCopyClick); copyBtn.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a copyBtn"); }
-                 if (resetBtn && !resetBtn.dataset.listenerAttached) { resetBtn.addEventListener('click', handleResetClick); resetBtn.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a resetBtn"); }
-                 if (heroYesBtn && !heroYesBtn.dataset.listenerAttached) { heroYesBtn.addEventListener('click', () => handleHeroChoice(true)); heroYesBtn.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a heroYesBtn"); }
-                 if (heroNoBtn && !heroNoBtn.dataset.listenerAttached) { heroNoBtn.addEventListener('click', () => handleHeroChoice(false)); heroNoBtn.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a heroNoBtn"); }
-                 if (modalCloseBtn && !modalCloseBtn.dataset.listenerAttached) { modalCloseBtn.addEventListener('click', handleModalClose); modalCloseBtn.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a modalCloseBtn"); }
-                 if (thankYouModal && !thankYouModal.dataset.listenerAttached) { thankYouModal.addEventListener('click', handleModalOverlayClick); thankYouModal.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a thankYouModal"); }
-                 if (downloadPdfBtn && !downloadPdfBtn.dataset.listenerAttached) { downloadPdfBtn.addEventListener('click', handleDownloadPdfClick); downloadPdfBtn.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a downloadPdfBtn"); }
-                 if (langItBtn && !langItBtn.dataset.listenerAttached) { langItBtn.addEventListener('click', () => { console.log("[DEBUG] Click su bottone IT"); setLanguage('it'); }); langItBtn.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a langItBtn"); } else if (!langItBtn) { console.error("[DEBUG] ERRORE: langItBtn non trovato per aggiungere listener!");}
-                 if (langEnBtn && !langEnBtn.dataset.listenerAttached) { langEnBtn.addEventListener('click', () => { console.log("[DEBUG] Click su bottone EN"); setLanguage('en'); }); langEnBtn.dataset.listenerAttached = 'true'; console.log("[DEBUG] Listener aggiunto a langEnBtn"); } else if (!langEnBtn) { console.error("[DEBUG] ERRORE: langEnBtn non trovato per aggiungere listener!");}
+                 if (joinBtn && !joinBtn.dataset.listenerAttached) { joinBtn.addEventListener('click', handleJoinClick); joinBtn.dataset.listenerAttached = 'true'; }
+                 if (copyBtn && !copyBtn.dataset.listenerAttached) { copyBtn.addEventListener('click', handleCopyClick); copyBtn.dataset.listenerAttached = 'true'; }
+                 if (resetBtn && !resetBtn.dataset.listenerAttached) { resetBtn.addEventListener('click', handleResetClick); resetBtn.dataset.listenerAttached = 'true'; }
+                 if (heroYesBtn && !heroYesBtn.dataset.listenerAttached) { heroYesBtn.addEventListener('click', () => handleHeroChoice(true)); heroYesBtn.dataset.listenerAttached = 'true'; }
+                 if (heroNoBtn && !heroNoBtn.dataset.listenerAttached) { heroNoBtn.addEventListener('click', () => handleHeroChoice(false)); heroNoBtn.dataset.listenerAttached = 'true'; }
+                 if (modalCloseBtn && !modalCloseBtn.dataset.listenerAttached) { modalCloseBtn.addEventListener('click', handleModalClose); modalCloseBtn.dataset.listenerAttached = 'true'; }
+                 if (thankYouModal && !thankYouModal.dataset.listenerAttached) { thankYouModal.addEventListener('click', handleModalOverlayClick); thankYouModal.dataset.listenerAttached = 'true'; }
+                 if (downloadPdfBtn && !downloadPdfBtn.dataset.listenerAttached) { downloadPdfBtn.addEventListener('click', handleDownloadPdfClick); downloadPdfBtn.dataset.listenerAttached = 'true'; }
+                 if (langItBtn && !langItBtn.dataset.listenerAttached) { langItBtn.addEventListener('click', () => setLanguage('it')); langItBtn.dataset.listenerAttached = 'true'; }
+                 if (langEnBtn && !langEnBtn.dataset.listenerAttached) { langEnBtn.addEventListener('click', () => setLanguage('en')); langEnBtn.dataset.listenerAttached = 'true'; }
 
                  // --- AGGIUNGI LISTENER PER PULSANTI CONFERMA ---
                  if (p1ConfirmBtn && !p1ConfirmBtn.dataset.listenerAttached) {
@@ -957,6 +946,3 @@
 
 </body>
 </html>
-```
-
-Questo codice dovrebbe ora funzionare come richiesto: la selezione della nazione è un processo in due fasi (click sulla nazione + click su "Conferma Scelta").
