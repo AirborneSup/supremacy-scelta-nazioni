@@ -190,7 +190,7 @@
             <!-- / SELETTORE LINGUA CON IMMAGINI CDN -->
 
             <h3 data-translate-key="loginTitle">Accesso Ufficiali</h3>
-            <!-- MODIFICA PLACEHOLDER E TRADUZIONE -->
+            <!-- MODIFICA PLACEHOLDER -->
             <input type="text" id="player-name" data-translate-key="loginPlaceholderName" data-translate-attr="placeholder" placeholder="Nome giocatore" required>
             <select id="alliance-select" required disabled>
                 <option value="" disabled selected>-- Caricamento Alleanze... --</option>
@@ -307,7 +307,7 @@
             it: {
                 appTitle: "Scelta Nazioni Supremacy 1914 ITA",
                 loginTitle: "Accesso Ufficiali",
-                loginPlaceholderName: "Nome giocatore", // MODIFICATO
+                loginPlaceholderName: "Nome giocatore", // CORRETTO
                 loginAllianceSelectDefault: "-- Seleziona Alleanza --",
                 loginAllianceLoading: "-- Caricamento Alleanze... --",
                 loginPlaceholderRoom: "ID Stanza Strategica (o lasciare vuoto)",
@@ -363,7 +363,7 @@
                 alertErrorAuthGeneric: "Errore auth ({code}). Impossibile continuare.",
                 alertErrorFirebaseInit: "Errore Init Firebase: {message}",
                 alertErrorAuthNotCompleted: "Autenticazione non completata.",
-                alertErrorMissingName: "Nome giocatore mancante.", // MODIFICATO
+                alertErrorMissingName: "Nome giocatore mancante.", // CORRETTO
                 alertErrorMissingAlliance: "Selezionare un'alleanza.",
                 alertErrorDbError: "Errore connessione database.",
                 alertErrorServices: "Errore servizi Firebase.",
@@ -380,7 +380,7 @@
                 alertErrorPdfLib: "Errore libreria PDF.",
                 alertErrorPdfData: "Errore dati per PDF.",
                 alertErrorCreatePdf: "Errore creazione PDF.",
-                alertErrorSelectNation: "Errore selezione nazione: {message}", // Riutilizzata per conferma
+                alertErrorSelectNation: "Errore selezione nazione: {message}",
                 alertErrorHeroChoice: "Errore scelta eroe: {message}",
                 alertErrorRetreatUidMismatch: "Errore identità durante la ritirata.",
                 alertErrorRetreatRemove: "Errore durante la ritirata: {message}",
@@ -408,7 +408,7 @@
             en: {
                 appTitle: "Supremacy 1914 Nation Draft ENG",
                 loginTitle: "Officer Login",
-                loginPlaceholderName: "Player Name", // MODIFICATO
+                loginPlaceholderName: "Player Name", // CORRETTO
                 loginAllianceSelectDefault: "-- Select Alliance --",
                 loginAllianceLoading: "-- Loading Alliances... --",
                 loginPlaceholderRoom: "Strategic Room ID (or leave empty)",
@@ -464,7 +464,7 @@
                 alertErrorAuthGeneric: "Auth error ({code}). Cannot continue.",
                 alertErrorFirebaseInit: "Firebase Init Error: {message}",
                 alertErrorAuthNotCompleted: "Authentication not complete.",
-                alertErrorMissingName: "Player Name missing.", // MODIFICATO
+                alertErrorMissingName: "Player Name missing.", // CORRETTO
                 alertErrorMissingAlliance: "Select an alliance.",
                 alertErrorDbError: "Database connection error.",
                 alertErrorServices: "Firebase services error.",
@@ -481,7 +481,7 @@
                 alertErrorPdfLib: "PDF library error.",
                 alertErrorPdfData: "PDF data error.",
                 alertErrorCreatePdf: "Error creating PDF.",
-                alertErrorSelectNation: "Error selecting nation: {message}", // Reused for confirm
+                alertErrorSelectNation: "Error selecting nation: {message}",
                 alertErrorHeroChoice: "Error choosing hero: {message}",
                 alertErrorRetreatUidMismatch: "Identity error during retreat.",
                 alertErrorRetreatRemove: "Error during retreat: {message}",
@@ -489,7 +489,7 @@
                 alertErrorNoRoomToCopy: "No room selected to copy link.",
                 confirmRetreat: "Confirm retreat?",
                 promptCopyManually: "Manual copy link:",
-                // For Confirm
+                 // For Confirm
                 confirmButtonLabel: "Confirm Pick",
                 confirmButtonTitle: "Confirm the selected nation and end turn",
                 alertErrorConfirmNoSelection: "No nation selected to confirm.",
@@ -546,20 +546,19 @@
                 document.querySelectorAll('[data-translate-key]').forEach(el => {
                     const key = el.dataset.translateKey;
                     const attr = el.dataset.translateAttr || 'textContent';
-                    const titleKey = el.dataset.translateTitleKey; // Per title separato
+                    const titleKey = el.dataset.translateTitleKey;
                     let translation = t(key);
                     let titleTranslation = titleKey ? t(titleKey) : null;
 
                     if (attr === 'innerHTML') el.innerHTML = translation;
                     else if (attr === 'placeholder') el.setAttribute(attr, translation);
-                    else if (attr === 'title' && titleTranslation) el.setAttribute(attr, titleTranslation); // Usa titleKey se presente
-                    else if (attr === 'title' && !titleTranslation) el.setAttribute(attr, translation); // Altrimenti usa key per title
+                    else if (attr === 'title' && titleTranslation) el.setAttribute(attr, titleTranslation);
+                    else if (attr === 'title' && !titleTranslation) el.setAttribute(attr, translation);
                     else if (el.tagName === 'SPAN' && el.parentElement.tagName === 'BUTTON') el.textContent = translation;
                     else if (attr === 'textContent') el.textContent = translation;
                 });
                 if (allianceSelect && allianceSelect.options.length > 0 && allianceSelect.options[0].value === "") { const currentText = allianceSelect.options[0].textContent; if (currentText === translations.it.loginAllianceLoading || currentText === translations.en.loginAllianceLoading || currentText === translations.it.loginAllianceSelectDefault || currentText === translations.en.loginAllianceSelectDefault) { allianceSelect.options[0].textContent = loadedAlliances.length > 0 ? t('loginAllianceSelectDefault') : t('loginAllianceLoading'); } }
                 if (authStatusEl && !isAuthComplete) { authStatusEl.textContent = t('authStatusInitializing'); }
-                 // Aggiorna anche i pulsanti conferma se visibili
                 if(p1ConfirmBtn && p1ConfirmBtn.style.display !== 'none') {
                    const titleKey1 = p1ConfirmBtn.dataset.translateTitleKey; if (titleKey1) p1ConfirmBtn.title = t(titleKey1);
                    const textSpan1 = p1ConfirmBtn.querySelector('span[data-translate-key]'); if(textSpan1) { const textKey1 = textSpan1.dataset.translateKey; if(textKey1) textSpan1.textContent = t(textKey1); }
@@ -645,14 +644,12 @@
                  if (p1ConfirmBtn) {
                      p1ConfirmBtn.style.display = showConfirmP1 ? 'inline-block' : 'none';
                      p1ConfirmBtn.disabled = !showConfirmP1;
-                     // Aggiorna testo/titolo
                      const titleKey1 = p1ConfirmBtn.dataset.translateTitleKey; if (titleKey1) p1ConfirmBtn.title = t(titleKey1);
                      const textSpan1 = p1ConfirmBtn.querySelector('span[data-translate-key]'); if(textSpan1) { const textKey1 = textSpan1.dataset.translateKey; if(textKey1) textSpan1.textContent = t(textKey1); }
                  }
                  if (p2ConfirmBtn) {
                      p2ConfirmBtn.style.display = showConfirmP2 ? 'inline-block' : 'none';
                      p2ConfirmBtn.disabled = !showConfirmP2;
-                     // Aggiorna testo/titolo
                      const titleKey2 = p2ConfirmBtn.dataset.translateTitleKey; if (titleKey2) p2ConfirmBtn.title = t(titleKey2);
                      const textSpan2 = p2ConfirmBtn.querySelector('span[data-translate-key]'); if(textSpan2) { const textKey2 = textSpan2.dataset.translateKey; if(textKey2) textSpan2.textContent = t(textKey2); }
                  }
@@ -698,7 +695,6 @@
                 console.log("[DEBUG] updateUI() completata.");
             }
             function startTimer() { clearInterval(timerInterval); if (!localGameState.timerEnd || localGameState.gamePhase !== 'draft') { if(timerEl) timerEl.textContent = ''; if(timerBarContainer) timerBarContainer.style.display = 'none'; return; } if(timerBarContainer) timerBarContainer.style.display = 'block'; const updateTimerDisplay = () => { const now = Date.now(); const endTime = localGameState.timerEnd; const timeLeft = Math.max(0, endTime - now); if (timeLeft === 0) { clearInterval(timerInterval); timerInterval = null; if(timerEl) timerEl.textContent = "00:00"; if(timerBar) timerBar.style.width = '0%'; console.log("Tempo scaduto.");
-                    // Possibile gestione skip turno qui se necessario
                     return; } const minutes = Math.floor(timeLeft / 60000); const seconds = Math.floor((timeLeft % 60000) / 1000); if(timerEl) timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; const percentageLeft = Math.max(0, (timeLeft / timerDuration) * 100); if(timerBar) timerBar.style.width = `${percentageLeft}%`; }; updateTimerDisplay(); timerInterval = setInterval(updateTimerDisplay, 1000); }
 
             function handleProvisionalSelect(nationData) {
@@ -715,7 +711,7 @@
 
                 // Se clicco sulla stessa già selezionata provvisoriamente, la deseleziono
                 if (provisionalSelection.playerId === playerRole && provisionalSelection.nationId === nationData.id) {
-                     playSound('click'); // Suono leggero per deselezione
+                     playSound('click');
                      provisionalSelection = { playerId: null, nationId: null };
                      console.log(`${logPrefix} ProvisionalSelect: Deselezionata provvisoriamente ${nationData.name}`);
                 } else {
@@ -724,7 +720,7 @@
                     console.log(`${logPrefix} ProvisionalSelect: Selezionata provvisoriamente ${nationData.name} (ID: ${nationData.id})`);
                 }
 
-                updateUI(); // Aggiorna UI per mostrare/nascondere selezione e pulsante conferma
+                updateUI();
             }
 
             function handleConfirmPick() {
@@ -797,7 +793,6 @@
                     });
             }
 
-
             function handleHeroChoice(choice) { if (!database || !roomId || !playerRole || localGameState.gamePhase !== 'hero_selection' || !isAuthComplete) { playSound('error'); return; } const logPrefix = `[${playerName} - P${playerRole}]`; const playerPath = `/rooms/${roomId}/player${playerRole}`; const myCurrentChoice = localGameState[`player${playerRole}`]?.heroChoice; if (myCurrentChoice !== null && myCurrentChoice !== undefined) { console.warn(`${logPrefix} HeroChoice: Già scelto (${myCurrentChoice}).`); return; } playSound(choice ? 'heroYes' : 'heroNo'); if (heroYesBtn) heroYesBtn.disabled = true; if (heroNoBtn) heroNoBtn.disabled = true; if (heroYesBtn) heroYesBtn.classList.toggle('selected', choice === true); if (heroNoBtn) heroNoBtn.classList.toggle('selected', choice === false); const opponentRole = playerRole === 1 ? 2 : 1; const opponentChoice = localGameState[`player${opponentRole}`]?.heroChoice; if (opponentChoice === null || opponentChoice === undefined) { if (heroWaitMessage) { heroWaitMessage.textContent = t('heroWaitMessage'); heroWaitMessage.style.display = 'block'; } } const updates = {}; updates[`${playerPath}/heroChoice`] = choice; console.log(`${logPrefix} HeroChoice: Mia scelta = ${choice}, Scelta avversario = ${opponentChoice}`); if (opponentChoice !== null && opponentChoice !== undefined) { console.log(`${logPrefix} HeroChoice: Entrambi i giocatori hanno scelto. Passaggio a 'summary'.`); updates[`/rooms/${roomId}/gamePhase`] = "summary"; updates[`/rooms/${roomId}/currentPlayer`] = null; updates[`/rooms/${roomId}/timerEnd`] = null; playSound('complete'); } else { console.log(`${logPrefix} HeroChoice: Scelta registrata. In attesa dell'avversario.`); } database.ref().update(updates).then(() => console.log(`${logPrefix} HeroChoice: Scelta (${choice}) salvata correttamente.`)).catch(error => { console.error(`${logPrefix} HeroChoice Errore aggiornamento Firebase:`, error); alert(t('alertErrorHeroChoice', { message: error.message })); playSound('error'); if (heroYesBtn) heroYesBtn.disabled = false; if (heroNoBtn) heroNoBtn.disabled = false; if (heroYesBtn) heroYesBtn.classList.remove('selected'); if (heroNoBtn) heroNoBtn.classList.remove('selected'); if (heroWaitMessage) heroWaitMessage.style.display = 'none'; }); }
             function generateAndDownloadPDF() { console.log("Genero PDF..."); if (typeof jsPDF === 'undefined') { alert(t('alertErrorPdfLib')); playSound('error'); if(downloadPdfBtn) downloadPdfBtn.disabled=false; return; } if (!localGameState?.player1 || !localGameState?.player2 || !roomId) { alert(t('alertErrorPdfData')); playSound('error'); if(downloadPdfBtn) downloadPdfBtn.disabled=false; return; } try { const doc = new jsPDF(); const getHeroText = (c) => (c === true ? t('summaryHeroDecisionYes') : (c === false ? t('summaryHeroDecisionNo') : t('summaryHeroDecisionNA'))); let y = 15; const ls = 8; const ss = 12; const lm = 15; const co = 110; doc.setFontSize(18); try { doc.setFont('Oswald', 'bold'); } catch(e) { doc.setFont('helvetica', 'bold'); } doc.text(t('summaryTitle'), doc.internal.pageSize.getWidth() / 2, y, { align: 'center' }); y += ss; doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.text(`${t('roomInfoLabel')}: ${roomId}`, lm, y); const now = new Date(); doc.text(`Data: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`, co, y); y += ss; doc.setLineWidth(0.3); doc.line(lm, y - ss / 2, doc.internal.pageSize.getWidth() - lm, y - ss / 2); const drawPlayerSection = (playerNum, playerState) => { const playerTitle = `${t('generalLabel')} ${playerNum}`; doc.setFontSize(14); try { doc.setFont('Oswald', 'bold'); } catch(e) { doc.setFont('helvetica', 'bold'); } doc.text(`${playerTitle}: ${playerState?.name || t('playerInfoWaiting')}`, lm, y); y += ls; if (!playerState || !playerState.name) { y += ss * 0.5; return; } doc.setFontSize(10); doc.setFont('helvetica', 'normal'); const allianceId = playerState.allianceId; const alliance = allianceId ? getAllianceById(allianceId) : null; const allianceText = `${t('summaryAllianceLabel')}: ${alliance ? alliance.name : (allianceId ? 'ID:'+allianceId : t('summaryHeroDecisionNA'))}`; doc.text(allianceText, lm, y); y += ls * 1.5; doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.text(`${t('summaryNationsLabel')}:`, lm, y); y += ls; doc.setFont('helvetica', 'normal'); const team = playerState.team || []; if (team.length === 0) { doc.text(`- ${t('summaryNoNations')}`, lm + 5, y); y += ls; } else { team.forEach((id, i) => { const nation = getNationData(id); doc.text(`${i + 1}. ${nation.name}`, lm + 5, y); y += ls; }); } y += ls / 2; doc.setFont('helvetica', 'bold'); doc.text(`${t('summaryHeroesLabel')}: ${getHeroText(playerState.heroChoice)}`, lm, y); y += ss * 1.5; }; drawPlayerSection(1, localGameState.player1); drawPlayerSection(2, localGameState.player2); const fn = `Riepilogo_${roomId}_${now.toISOString().split('T')[0]}.pdf`; doc.save(fn); console.log("PDF generato:", fn); playSound('complete'); if (thankYouModal) { thankYouModal.style.display = 'flex'; void thankYouModal.offsetWidth; thankYouModal.classList.add('visible'); } else { alert(t('modalTitleComplete')); } if (downloadPdfBtn) downloadPdfBtn.style.display = 'none'; if (resetBtn) resetBtn.style.display = 'none'; } catch (err) { console.error("Errore durante la generazione del PDF:", err); alert(t('alertErrorCreatePdf')); playSound('error'); if (downloadPdfBtn) downloadPdfBtn.disabled = false; } }
             function getHeroStatusText(choice) { if (choice === true) return t('heroStatusDeployed'); if (choice === false) return t('heroStatusNone'); return t('heroStatusWaiting'); }
@@ -838,7 +833,6 @@
                      if (isSelected) {
                          nationCard.classList.add('disabled');
                      } else {
-                         // Mostra tooltip solo se non è la selezione provvisoria
                          nationCard.onmouseover = () => { if (tooltipElement && !isProvisional) tooltipElement.style.display = 'block'; };
                          nationCard.onmouseout = () => { if (tooltipElement) tooltipElement.style.display = 'none'; };
 
@@ -848,10 +842,8 @@
 
                              if (isProvisional) {
                                  nationCard.classList.add('provisional');
-                                 // Non rimuovere 'available' per mantenere stili base
                              }
                          } else {
-                             // Nazione disponibile ma non è il mio turno o squadra piena
                              nationCard.classList.add('disabled');
                              nationCard.style.cursor = 'not-allowed';
                          }
