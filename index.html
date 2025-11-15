@@ -760,11 +760,17 @@
                 const nextTeam = [...currentTeam, nationIdToConfirm];
                 updates[`${playerPath}/team`] = nextTeam;
 
-                const nextPlayer = playerRole === 1 ? 2 : 1;
-                const p1TeamSize = (playerRole === 1 ? nextTeam.length : (localGameState.player1?.team?.length || 0));
-                const p2TeamSize = (playerRole === 2 ? nextTeam.length : (localGameState.player2?.team?.length || 0));
+                // --- INIZIO MODIFICA LOGICA TURNO ABBAABBAAB ---
+                const pickSequence = [1, 2, 2, 1, 1, 2, 2, 1, 1, 2]; // Definisce chi sceglie al turno N (indice 0 = turno 1)
 
-                if (p1TeamSize >= 5 && p2TeamSize >= 5) {
+                // Calcola il numero totale di nazioni scelte PRIMA di questa mossa
+                const totalPicksSoFar = (localGameState.player1?.team?.length || 0) + (localGameState.player2?.team?.length || 0);
+
+                // Calcola il numero totale di nazioni scelte DOPO questa mossa
+                const totalPicksAfterThisOne = totalPicksSoFar + 1;
+
+                // Controlla se la fase di draft è terminata (10 nazioni scelte in totale)
+                if (totalPicksAfterThisOne >= 10) {
                     updates[`/rooms/${roomId}/gamePhase`] = "hero_selection";
                     updates[`/rooms/${roomId}/currentPlayer`] = null;
                     updates[`/rooms/${roomId}/timerEnd`] = null;
@@ -772,10 +778,14 @@
                     updates[`/rooms/${roomId}/player2/heroChoice`] = null;
                     playSound('complete');
                 } else {
+                    // Determina il prossimo giocatore in base alla sequenza
+                    // L'indice dell'array corrisponde al numero di pick totali che ci saranno dopo la mossa corrente
+                    const nextPlayer = pickSequence[totalPicksAfterThisOne];
                     updates[`/rooms/${roomId}/currentPlayer`] = nextPlayer;
                     turnStartTime = Date.now();
                     updates[`/rooms/${roomId}/timerEnd`] = turnStartTime + timerDuration;
                 }
+                // --- FINE MODIFICA LOGICA TURNO ---
 
                 console.log(`${logPrefix} ConfirmPick: Confermata Nazione ID: ${nationIdToConfirm}. Updates:`, JSON.stringify(updates));
 
